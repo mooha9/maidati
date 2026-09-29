@@ -1,0 +1,887 @@
+<title>مائدتي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Layout: mobile-first app shell — sticky header, one scrolling view, bottom tab bar. Olive (the plan's staple) + fig (its sweet) on a sage-tinted ground. */
+:root{
+  --bg:#F1F4EC; --surface:#FFFFFF; --sunk:#E8EDE1; --ink:#1B261D; --muted:#5B685D; --line:#D8E0D1;
+  --olive:#3E5E29; --olive-ink:#FFFFFF; --olive-soft:#E1EBD3;
+  --fig:#7A3455; --fig-soft:#F4E3EB;
+  --ok:#2C7A47; --ok-soft:#DDF0E3; --warn:#A96C12; --warn-soft:#FBEBCD; --bad:#B2362D; --bad-soft:#F9E0DD;
+  --shadow:0 1px 2px rgba(27,38,29,.06),0 6px 20px rgba(27,38,29,.06);
+  --f-display:"Alexandria","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1510; --surface:#182019; --sunk:#131A14; --ink:#E6ECE3; --muted:#9AA79B; --line:#2A352B;
+  --olive:#9CC37B; --olive-ink:#11200A; --olive-soft:#223019;
+  --fig:#E79CBF; --fig-soft:#3A2230;
+  --ok:#6FCB8E; --ok-soft:#173222; --warn:#E6B45C; --warn-soft:#3A2C12; --bad:#F2887E; --bad-soft:#3C1C19;
+  --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0F1510; --surface:#182019; --sunk:#131A14; --ink:#E6ECE3; --muted:#9AA79B; --line:#2A352B;
+  --olive:#9CC37B; --olive-ink:#11200A; --olive-soft:#223019;
+  --fig:#E79CBF; --fig-soft:#3A2230;
+  --ok:#6FCB8E; --ok-soft:#173222; --warn:#E6B45C; --warn-soft:#3A2C12; --bad:#F2887E; --bad-soft:#3C1C19;
+  --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--fig);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;line-height:1.35;margin:0;text-wrap:balance}
+.app{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 110px}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);padding-block:14px 10px;display:flex;align-items:center;gap:12px;border-bottom:1px solid transparent}
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.mark{width:38px;height:38px;border-radius:12px;background:var(--olive);display:grid;place-items:center;flex:none}
+.mark svg{width:22px;height:22px}
+.brand h1{font-size:20px}
+.brand small{display:block;color:var(--muted);font-size:12px;font-family:var(--f-body)}
+.iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:12px;width:40px;height:40px;display:grid;place-items:center;flex:none}
+.iconbtn svg{width:20px;height:20px;stroke:currentColor}
+
+/* tab bar */
+.tabs{position:fixed;inset-inline:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center}
+.tabs-in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:560px}
+.tab{background:none;border:0;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;color:var(--muted);border-radius:12px}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.tab[aria-selected="true"]{color:var(--olive);font-weight:600}
+.tab[aria-selected="true"] .pip{background:var(--olive-soft)}
+.pip{padding:3px 16px;border-radius:99px;display:grid;place-items:center}
+
+.view{display:flex;flex-direction:column;gap:14px;padding-top:6px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.label{font-size:12px;letter-spacing:.02em;color:var(--muted);font-weight:500}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* now card */
+.now{background:var(--olive);color:var(--olive-ink);border:0;position:relative;overflow:hidden}
+.now .label{color:inherit;opacity:.8}
+.now h2{font-size:24px;margin-top:2px}
+.now .count{font-family:var(--f-display);font-size:14px;opacity:.9}
+.now-steps{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.now-step{display:flex;gap:10px;align-items:baseline;background:rgba(255,255,255,.12);border-radius:10px;padding:8px 10px;font-size:14px}
+:root[data-theme="dark"] .now-step{background:rgba(0,0,0,.12)}
+.now-step b{font-family:var(--f-display);font-weight:600;min-width:74px;font-size:13px;opacity:.85}
+.now .btns{margin-top:12px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:11px;padding:8px 14px;font-weight:500;font-size:14px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink)}
+.btn.primary{background:var(--olive);color:var(--olive-ink);border-color:var(--olive)}
+.btn.fig{background:var(--fig);color:var(--surface);border-color:var(--fig)}
+.btn.ghost-on-olive{background:rgba(255,255,255,.16);border-color:transparent;color:inherit}
+.btn:disabled{opacity:.55;cursor:default}
+.btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* day timeline */
+.timeline{display:flex;flex-direction:column}
+.tl{display:grid;grid-template-columns:56px 1fr;gap:12px;padding-block:9px;border-top:1px dashed var(--line)}
+.tl:first-child{border-top:0}
+.tl time{font-family:var(--f-display);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.tl.past{opacity:.5}
+.tl.cur time{color:var(--fig);font-weight:600}
+.tl-t{font-weight:600}
+.tl-d{font-size:13.5px;color:var(--muted)}
+
+/* water */
+.cups{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:10px}
+.cup{aspect-ratio:3/4;max-width:100%;border:1.5px solid var(--line);border-radius:6px 6px 12px 12px;background:var(--sunk);position:relative;overflow:hidden;padding:0}
+.cup::after{content:"";position:absolute;inset:auto 0 0 0;height:0;background:linear-gradient(var(--olive-soft),var(--olive));transition:height .35s}
+.cup.on::after{height:82%}
+.cup.on{border-color:var(--olive)}
+
+/* checklist */
+.checks{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-align:start;width:100%}
+.chk .box{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--muted);flex:none;display:grid;place-items:center;margin-top:2px}
+.chk.on .box{background:var(--ok);border-color:var(--ok)}
+.chk.on .box::after{content:"";width:10px;height:6px;border:2px solid var(--surface);border-top:0;border-inline-end:0;transform:rotate(-45deg) translateY(-1px)}
+.chk.on .t{text-decoration:line-through;color:var(--muted)}
+.chk .t{font-weight:500;font-size:14px}
+.chk .d{font-size:12.5px;color:var(--muted)}
+
+/* weekly quotas */
+.quotas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
+.q{border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.q .n{font-family:var(--f-display);font-size:18px;font-variant-numeric:tabular-nums}
+.q .bar{height:5px;border-radius:9px;background:var(--sunk);overflow:hidden}
+.q .bar i{display:block;height:100%;background:var(--olive);border-radius:9px}
+.q.full .bar i{background:var(--warn)}
+.q.over .bar i{background:var(--bad)}
+.q .ctl{display:flex;gap:6px}
+.q .ctl button{flex:1;border:1px solid var(--line);background:var(--sunk);border-radius:8px;padding:2px 0;font-size:16px;line-height:1.4}
+
+/* search */
+.searchbox{position:relative}
+.searchbox input{width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:13px 46px 13px 14px;font-size:16px}
+.searchbox input:focus{border-color:var(--olive);outline:none}
+.searchbox svg{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;stroke:var(--muted);fill:none;stroke-width:2}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:4px 12px;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--olive);border-color:var(--olive);color:var(--olive-ink)}
+.res{display:flex;flex-direction:column;gap:8px}
+.food{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.badge{font-size:12px;font-weight:600;border-radius:8px;padding:3px 9px;white-space:nowrap;font-family:var(--f-display)}
+.b-yes{background:var(--ok-soft);color:var(--ok)}
+.b-limit{background:var(--warn-soft);color:var(--warn)}
+.b-no{background:var(--bad-soft);color:var(--bad)}
+.b-info{background:var(--sunk);color:var(--muted)}
+.food .nm{font-weight:600}
+.food .nt{font-size:13px;color:var(--muted)}
+.food .alt{font-size:13px;color:var(--olive);margin-top:2px}
+.sec-t{font-family:var(--f-display);font-size:14px;color:var(--muted);margin-top:4px}
+
+/* meals builder */
+.meal{padding:0;overflow:hidden}
+.meal-h{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);gap:10px;flex-wrap:wrap}
+.meal-h h3{font-size:18px}
+.meal-h .tm{font-family:var(--f-display);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.part{padding:12px 16px;border-top:1px solid var(--line);display:grid;grid-template-columns:28px 1fr;gap:10px}
+.part:first-of-type{border-top:0}
+.part .no{width:24px;height:24px;border-radius:50%;background:var(--fig-soft);color:var(--fig);font-family:var(--f-display);font-size:12px;display:grid;place-items:center;margin-top:2px}
+.part .pt{font-weight:600;font-size:14px}
+.part .pd{font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.opt{border:1px solid var(--line);background:var(--sunk);border-radius:10px;padding:5px 11px;font-size:13.5px;text-align:start}
+.opt[aria-pressed="true"]{background:var(--olive-soft);border-color:var(--olive);color:var(--ink);font-weight:600}
+.opt .lim{color:var(--warn);font-size:11.5px;font-weight:500}
+.fixed{font-size:14px}
+
+/* recipes */
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.rc{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:0;text-align:start;display:flex;flex-direction:column;overflow:hidden}
+.rc .art{height:84px;display:grid;place-items:center;font-family:var(--f-display);font-size:30px;color:var(--fig);background:var(--fig-soft);position:relative}
+.rc .art.o{background:var(--olive-soft);color:var(--olive)}
+.rc .art canvas{position:absolute;inset:0;width:100%;height:100%}
+.rc .bd{padding:10px 12px 12px;display:flex;flex-direction:column;gap:4px}
+.rc .nm{font-weight:600;font-size:15px;line-height:1.45}
+.rc .mt{font-size:12px;color:var(--muted)}
+.ai{border:1.5px dashed var(--fig);background:var(--fig-soft)}
+.ai textarea,.ai select,.field{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--surface)}
+.ai textarea{min-height:64px;resize:vertical}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(10,16,11,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:760px;max-height:92%;overflow:auto;border-radius:20px 20px 0 0;padding:18px 18px calc(24px + env(safe-area-inset-bottom,0px))}
+.sheet h2{font-size:22px}
+.sheet ol,.sheet ul{padding-inline-start:20px;margin:6px 0}
+.sheet li{margin-block:5px}
+.ing li{list-style:none;margin-inline-start:-20px}
+.ing label{display:flex;gap:8px;align-items:flex-start}
+.ing input{margin-top:6px;accent-color:var(--olive)}
+.rule{background:var(--olive-soft);border-radius:12px;padding:10px 12px;font-size:13.5px}
+.warnbox{background:var(--warn-soft);border-radius:12px;padding:10px 12px;font-size:13.5px;color:var(--ink)}
+.grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 12px}
+
+/* reminders */
+.rem{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.rem:first-child{border-top:0}
+.rem .nm{font-weight:600;font-size:14.5px}
+.rem .ds{font-size:12.5px;color:var(--muted)}
+.rem input[type=time]{border:1px solid var(--line);border-radius:9px;padding:5px 8px;background:var(--sunk);font-variant-numeric:tabular-nums}
+.rem .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:44px;height:26px;border-radius:99px;background:var(--line);border:0;position:relative;flex:none}
+.sw::after{content:"";position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:var(--surface);transition:right .2s}
+.sw[aria-checked="true"]{background:var(--olive)}
+.sw[aria-checked="true"]::after{right:21px}
+.link{font-size:12.5px;color:var(--olive);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:3px 9px;display:inline-flex;gap:5px;align-items:center}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow);width:min(92vw,460px);display:flex;gap:12px;align-items:center}
+.toast b{font-family:var(--f-display)}
+.toast button{margin-inline-start:auto;background:var(--bg);color:var(--ink);border:0;border-radius:9px;padding:5px 12px;font-weight:600}
+
+details.rules summary{cursor:pointer;font-family:var(--f-display);font-weight:600;list-style:none;display:flex;justify-content:space-between}
+details.rules summary::after{content:"+";color:var(--muted)}
+details.rules[open] summary::after{content:"−"}
+.rl{display:flex;flex-direction:column;gap:8px;margin-top:10px;font-size:14px}
+.rl div{padding-inline-start:12px;border-inline-start:2px solid var(--olive-soft)}
+.pause{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;background:var(--sunk);margin-top:10px;font-size:13.5px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="app" dir="rtl" lang="ar">
+  <header class="top">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="5.2" ry="7" fill="var(--olive-ink)" opacity=".95" transform="rotate(-28 12 13)"/><path d="M14.5 4.5c1.5-1.8 3.8-2.4 5.5-2" stroke="var(--olive-ink)" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <div><h1>مائدتي</h1><small id="today-lbl"></small></div>
+    </div>
+    <button class="iconbtn" id="theme-btn" aria-label="تبديل الوضع الليلي"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
+  </header>
+  <main id="main"></main>
+</div>
+
+<nav class="tabs" dir="rtl" aria-label="الأقسام"><div class="tabs-in" role="tablist" id="tabs"></div></nav>
+<div id="overlay"></div>
+<div id="toast-host"></div>
+
+<script>
+document.documentElement.lang='ar';document.documentElement.dir='rtl';
+
+/* ============ DATA: the plan as written by the specialist ============ */
+const SALAD={t:'سلطة',d:'سلطة خضروات + رشة ملح الهمالايا أو البحري + ملعقة صغيرة خل تفاح + ملعقة صغيرة زيت زيتون',fixed:true};
+const OLIVE={t:'زيتون',d:'زيتون أخضر فلسطيني',fixed:true};
+const WHEY={t:'بعد الوجبة بنصف ساعة',d:'مصل اللبن',fixed:true};
+const MEALS=[
+ {id:'breakfast',name:'الفطور',time:'08:00',parts:[
+  {k:'fruit',t:'فاكهة',d:'قبل الوجبة بنصف ساعة — اختر واحد',opts:['منقوع العسل (ملعقة على كوب ماء دافئ)','منقوع التين المجفف','منقوع المشمش المجفف','عصير تفاح طازج (كوب)','مشروب دعم الغدة الكظرية','منقوع ٥ حبات زبيب أسود','حبة قراصيا (برقوق)']},
+  {k:'salad',...SALAD},
+  {k:'starch',t:'نشويات',d:'اختر واحد',opts:['خبز أو توست حبوب كاملة','خبز الرز','خبز الكينوا','خبز الذرة','خبز الحنطة السوداء','خبز البر','خبز الحنطة','خبز الشوفان']},
+  {k:'main',t:'الطبق',d:'اختر واحد',opts:['فول','فاصوليا','لوبيا','زيتون أسود مهروس + خس أو خيار','جبن الكاجو','سبانخ','بذور الشيا مع الشوفان وحليب جوز الهند','فاصوليا سوداء','مربى بدون سكر','حمص','زعتر + زيت زيتون','جواكامولي','الفطر البني','زبدة بذر تباع الشمس','برجر نباتي','بيض عضوي|٣ مرات بالأسبوع كحد أقصى','ديك رومي طازج']},
+  {k:'olive',...OLIVE},{k:'whey',...WHEY}]},
+ {id:'snack1',name:'وجبة خفيفة ١',time:'10:30',parts:[
+  {k:'snack',t:'وجبة خفيفة',d:'اختر واحد',opts:['سموذي بروتين بودر (بديل مصل اللبن)','ماء جوز الهند','شاي نبات القراص','شاي زعتر','كاكاو مر','بذر تباع الشمس','بندق','عصير جزر طازج + ملعقة صغيرة كركم','شاي أخضر|مرتين بالأسبوع']}]},
+ {id:'lunch',name:'الغداء',time:'13:30',parts:[
+  {k:'fruit',t:'قبل الغداء بنصف ساعة',d:'اختر واحد',opts:['منقوع اللبان المر|لمدة أسبوعين فقط','عنب','كيوي','توت أزرق أو أحمر','ثلاث حبات تمر','مانجا','رمان','أناناس']},
+  {k:'salad',...SALAD},
+  {k:'starch',t:'نشويات',d:'اختر واحد',opts:['برغل','فريكة','هريس','جريش','معكرونة حنطة أو قمح كامل','كينوا','رز أسمر','قرع (يقطين)','كوسا','معكرونة الرز أو الكينوا','بطاطس','جزر','بطاطا حلوة','نبات اليام','حبوب الدخن','زهرة']},
+  {k:'protein',t:'بروتين',d:'اختر واحد',opts:['فول','فاصوليا','لوبيا','نخي (حمص حب)','عدس','لحم غنم (خروف)','تشريبة الكوارع|مرتين بالشهر','سلمون بحري عضوي (نرويجي)','سمك السيباس','فاصوليا سوداء','بط|مرة إلى مرتين بالشهر','كبدة عجل أو خروف|مرة بالشهر','برجر نباتي','دجاج|مرتين بالأسبوع كحد أقصى']},
+  {k:'olive',...OLIVE}]},
+ {id:'snack2',name:'وجبة خفيفة ٢',time:'16:30',parts:[
+  {k:'snack',t:'وجبة خفيفة',d:'اختر واحد',opts:['بذر اليقطين','ذرة أو فشار','الكستناء','كرات الطاقة','شاي الميرامية أو الدارسين أو المردقوش|مرتين بالأسبوع','كيكة الدخن']}]},
+ {id:'dinner',name:'العشاء',time:'19:30',parts:[
+  {k:'soup',t:'شوربة',d:'اختر واحد — مع إضافة البصل والثوم أو الكزبرة',opts:['شوربة اليقطين والجزر','شوربة العدس مع الكزبرة','شوربة الكوسا والجزر','شوربة الشوفان','شوربة الذرة','شوربة الفطر البني','شوربة البطاطا الحلوة والفاصوليا السوداء','شوربة نبات اليام']},
+  {k:'olive',...OLIVE},{k:'whey',...WHEY}],note:'يمكن حذف العشاء عند الشبع، أو إضافة بروتين إن شعرت بالجوع.'}
+];
+
+const SUPPS=[
+ {id:'k2',t:'Circulation Max K2 — 180mg',d:'حبة قبل الفطور، ثم تناول الوجبة',at:'breakfast',off:-30},
+ {id:'cocktail',t:'Pickleball Cocktail',d:'بوتاسيوم 800 + صوديوم 90 + مغنيسيوم 50 — يضاف للماء بعد الفطور أو الغداء',at:'breakfast',off:45},
+ {id:'betaine',t:'Betaine HCL',d:'خلال وجبة البروتين في الغداء. ممنوع على معدة فارغة أو مع مضادات الالتهاب',at:'lunch',off:0},
+ {id:'mag',t:'Magnesium Glycinate 400mg + B6 25mg',d:'قبل العشاء، ثم تناول الوجبة',at:'dinner',off:-30},
+];
+
+const QUOTAS=[
+ {id:'egg',t:'بيض عضوي',max:3,per:'w'},{id:'chicken',t:'دجاج',max:2,per:'w'},
+ {id:'green',t:'شاي أخضر',max:2,per:'w'},{id:'herbtea',t:'ميرامية/دارسين/مردقوش',max:2,per:'w'},
+ {id:'brazil',t:'مكسرات برازيلية (٣ حبات)',max:2,per:'w'},{id:'radish',t:'فجل مسلوق',max:2,per:'w'},
+ {id:'epsom',t:'نقع القدم بملح إبسوم',max:3,per:'w'},{id:'reishi',t:'مسحوق الفطر الريشي',max:3,per:'w'},
+ {id:'duck',t:'بط',max:2,per:'m'},{id:'liver',t:'كبدة',max:1,per:'m'},{id:'trotter',t:'تشريبة الكوارع',max:2,per:'m'},
+];
+
+/* food lexicon: [name, status, note, aliases, alternative] — yes / limit / no */
+const F=[
+// avoid
+['الحليب ومنتجات الألبان','no','غنية بالكالسيوم وتبطئ الأيض','حليب,حليب بقر,زبادي,لبن,روب,يوغرت,ألبان,لبن رائب','حليب جوز الهند أو حليب نباتي'],
+['الأجبان','no','غنية بالكالسيوم والدهون — تبطئ الأيض','جبن,جبنة,شيدر,موزاريلا,حلوم,فيتا,جبن أبيض,قشطة','جبن الكاجو'],
+['اللبنة','no','من الألبان الممنوعة','لبنه,لبنة','زيتون أسود مهروس أو جواكامولي'],
+['الأجبان المصنعة','no','مصدر للألمنيوم ومصنّعة','جبن مثلثات,جبن شرائح,كيري,جبن مطبوخ','جبن الكاجو'],
+['الكريمة','no','دهون ممنوعة للأيض البطيء','كريمة,قشطة,كريم طبخ,كريمة خفق',''],
+['الزبدة بأنواعها','no','الدهن المسموح هو زيت الزيتون فقط','زبدة,زبده,بتر','زيت الزيتون'],
+['السمن الحيواني','no','دهون ممنوعة','سمن,سمن بلدي,سمن غنم','زيت الزيتون'],
+['السمن النباتي والدهون المهدرجة','no','ضمن الممنوعات العامة','مارجرين,سمن نباتي,مهدرجة,دهون مهدرجة','زيت الزيتون'],
+['زيت جوز الهند','no','من الدهون الممنوعة في الأيض البطيء','زيت جوز الهند,زيت كوكونت','زيت الزيتون'],
+['زيوت الطبخ الأخرى','limit','في الأيض البطيء يُسمح بزيت الزيتون فقط','زيت ذرة,زيت دوار الشمس,زيت كانولا,زيت نباتي,زيت','زيت الزيتون'],
+['الصويا ومنتجاتها','no','غنية بالكالسيوم وتبطئ الأيض','صويا,توفو,حليب صويا,صوص صويا,صلصة الصويا','حليب جوز الهند'],
+['الطحينة والسمسم','limit','قلّل منها (غنية بالكالسيوم)','طحينة,طحينه,سمسم,حلاوة طحينية,رهش','زيت زيتون وليمون في الحمص'],
+['البروكلي','no','من الأغذية الغنية بالكالسيوم','بروكلي,بروكولي','الزهرة'],
+['الباذنجان','no','ضمن قائمة التجنب','باذنجان,متبل,بابا غنوج,مسقعة','الكوسا'],
+['مسحوق الخروب','no','ضمن قائمة التجنب','خروب','كاكاو مر'],
+['زبدة المكسرات','no','زبدة اللوز والجوز والفول السوداني ممنوعة','زبدة الفول السوداني,زبدة اللوز,زبدة الجوز,بينات بتر','زبدة بذر تباع الشمس'],
+['السردين','no','دهونه عالية للأيض البطيء','سردين,سردينة','السلمون أو السيباس'],
+['التونة','no','ضمن الدهون الممنوعة','تونة,تونه,تن','السلمون أو السيباس'],
+['اللحوم المصنعة','no','سلامي ومرتديلا ونقانق وسجق','سلامي,مرتديلا,سجق,نقانق,هوت دوج,بسطرمة,لانشون,بيبروني','ديك رومي طازج'],
+['الصلصات الجاهزة','no','مصنعة وغنية بالدهون والمواد الحافظة','كاتشب,مايونيز,صلصة جاهزة,صوص,باربكيو,رانش','جواكامولي أو صلصة طماطم منزلية'],
+['القهوة','no','غنية بالكوبالت ومنبّهة','قهوة,قهوه,اسبريسو,نسكافيه,كابتشينو,لاتيه,قهوة عربية,قهوة تركية','قهوة الهندباء أو قهوة الشعير'],
+['الشاي الأحمر','no','من الأعشاب الغنية بالكوبالت','شاي,شاي أحمر,شاي أسود,شاي حليب,كرك','شاي الزعتر أو شاي القراص'],
+['البابونج','no','غني بالكوبالت','بابونج,كاموميل','شاي الميرامية'],
+['اليانسون','no','غني بالكوبالت','يانسون,ينسون','شاي الزعتر'],
+['الكافيين ومشروبات الطاقة','no','منشطات تستنزف المغنيسيوم','كافيين,ريد بول,مشروب طاقة,مونستر,مشروبات الطاقة','ماء جوز الهند'],
+['المشروبات الغازية','no','مصدر ألمنيوم وسكر','ببسي,كولا,كوكاكولا,غازيات,سفن اب,مشروب غازي,صودا,مشروبات غازية','ماء مع شرائح ليمون'],
+['العصائر المعلبة','no','سكر مضاف ومواد حافظة','عصير معلب,عصير جاهز,عصير علبة','عصير طازج'],
+['السكر الأبيض','no','السكر المسموح: سكر القصب أو ستيفيا عضوية باعتدال','سكر,سكر أبيض,حلويات,شوكولاتة بالحليب,حلى','سكر القصب أو ستيفيا'],
+['المحليات الصناعية','no','ضمن الممنوعات العامة','سكرالوز,اسبارتام,دايت,سويت,محلي صناعي','ستيفيا عضوية'],
+['الرز الأبيض','no','كربوهيدرات مكررة','رز,رز أبيض,أرز,أرز أبيض,بسمتي','الرز الأسمر أو الكينوا'],
+['الخبز الأبيض والطحين الأبيض','no','مكرر ومصدر ألمنيوم','خبز أبيض,طحين أبيض,صامولي,تميس,كرواسون,خبز فرنسي,معجنات','خبز الحبوب الكاملة أو خبز الشوفان'],
+['الوجبات السريعة','no','ضمن الممنوعات العامة','برجر مطاعم,بيتزا,شاورما,بطاطس مقلية,ماكدونالدز,فاست فود,بروستد','برجر نباتي منزلي'],
+['غلوتامات أحادي الصوديوم (E621)','no','محسن نكهة ممنوع','غلوتامات,ماجي,مرقة جاهزة,مكعبات مرق,E621,msg','مرق منزلي'],
+['كورن فلكس مدعم بالحديد','no','يرفع الحديد','كورن فلكس,حبوب إفطار,سيريال','الشوفان'],
+['عرق السوس','no','من الأعشاب التي ترفع الحديد','عرق سوس,سوس',''],
+['البرسيم','no','يرفع الحديد والكوبالت','برسيم,ألفالفا',''],
+['غولدنسال والكوهوش الأسود','no','أعشاب تجنب (حديد وكوبالت)','غولدنسال,خاتم الذهب,كوهوش,الدردار الأحمر,عشب الطير,البلوط',''],
+['مكملات الكالسيوم وفيتامين د','no','تبطئ الأيض وتستنزف المغنيسيوم','كالسيوم,فيتامين د,فيتامين دال,vitamin d',''],
+['مكملات B12 وPABA','no','تثبط الغدة الدرقية وتبطئ الأيض','b12,ب12,بي 12,PABA,B10,فيتامين ب',''],
+['أوميغا ٣ وزيت كبد الحوت','no','تخفض معدل الأيض','اوميغا,أوميغا,اوميجا,زيت سمك,زيت كبد الحوت',''],
+['مكملات الحديد','no','الحديد مرتفع في التحليل','حديد,مكمل حديد',''],
+['مضادات الحموضة بالألمنيوم','no','مصدر ألمنيوم — راجع الطبيب قبل الإيقاف','مضاد حموضة,جافيسكون,مالوكس',''],
+['أواني الألمنيوم والحديد','no','استخدم ستانلس ستيل أو فخار أو زجاج','قدر ألمنيوم,ورق ألمنيوم,قصدير,أواني حديد,طاوة حديد',''],
+['غلاية وصانعة القهوة الكهربائية','no','من مصادر اليورانيوم المذكورة','غلاية,كتل,صانعة قهوة','غلاية ستانلس على الموقد'],
+['الأطعمة المعلبة','no','يفضل الطازج والمحلي','معلبات,معلب,علب',''],
+['الدخان','no','مصدر ألمنيوم','سجائر,تدخين,شيشة,معسل',''],
+// limits
+['الدجاج','limit','مرتين بالأسبوع كحد أقصى','دجاج,فراخ,صدر دجاج,دجاجة',''],
+['البيض العضوي','limit','لا يزيد عن ٣ مرات بالأسبوع','بيض,بيضة,أومليت,شكشوكة',''],
+['البط','limit','مرة إلى مرتين بالشهر','بط,بطة',''],
+['الكبدة','limit','كبدة عجل أو خروف مرة بالشهر','كبدة,كبد,كبده',''],
+['تشريبة الكوارع','limit','مرتين بالشهر','كوارع,مقادم',''],
+['الشاي الأخضر','limit','مرتين بالأسبوع','شاي أخضر,ماتشا',''],
+['الفول السوداني','limit','حبوبه مسموحة باعتدال، أما زبدته فممنوعة','فول سوداني,فستق عبيد',''],
+['الجوز','limit','غير مذكور صراحة — باعتدال، وزبدته ممنوعة','جوز,عين الجمل',''],
+['المكسرات البرازيلية','limit','٣ حبات مرتين بالأسبوع للتخلص من السموم','برازيلي,مكسرات برازيلية',''],
+['الملح','limit','بحري أو همالايا أو سلتيك، من ١ إلى ١٫٥ غ يومياً (أقل من ثلثي ملعقة صغيرة)','ملح,ملح طعام,ملح الهمالايا,ملح بحري,سلتيك','ملح الهمالايا أو السلتيك'],
+['سكر القصب والستيفيا','limit','السكر المسموح — باعتدال','سكر قصب,ستيفيا,سكر بني',''],
+['العسل','limit','مسموح (منقوع العسل صباحاً) باعتدال','عسل',''],
+['التمر','limit','ثلاث حبات قبل الغداء','تمر,رطب',''],
+['ستيك بقري','limit','مصدر للفسفور — غير مذكور في قائمة الغداء، باعتدال','لحم بقر,ستيك,بقري,لحم عجل',''],
+['اللبان المر','limit','منقوعه لمدة أسبوعين فقط قبل الغداء','لبان,لبان مر,مستكة',''],
+['الفجل','limit','مسلوق مرتين بالأسبوع للتخلص من السموم','فجل',''],
+// allowed extras
+['زيت الزيتون','yes','الدهن الوحيد المسموح في الأيض البطيء','زيت زيتون',''],
+['مصل اللبن','yes','بعد الفطور والعشاء بنصف ساعة','مصل اللبن,واي,whey,بروتين مصل',''],
+['حليب جوز الهند واللوز','yes','بديل الحليب في السموذي والشيا','حليب جوز الهند,حليب لوز,حليب نباتي,حليب شوفان',''],
+['اللحم الغنمي','yes','بروتين الغداء','لحم,لحم غنم,خروف,ضأن,لحم حاشي,كبسة لحم,مندي لحم',''],
+['السلمون','yes','بحري عضوي نرويجي','سلمون,سمك',''],
+['السيباس','yes','سمك الغداء','سيباس,قاروص,سمك أبيض',''],
+['الديك الرومي','yes','طازج (فطور)','ديك رومي,حبش',''],
+['البقوليات','yes','فول، فاصوليا، لوبيا، نخي، عدس — انقعها ليلة إن كان القولون متعباً','فول,عدس,حمص,فاصوليا,لوبيا,نخي,بقوليات,فلافل',''],
+['الحبوب الكاملة','yes','برغل، فريكة، هريس، جريش، كينوا، رز أسمر، شوفان، دخن، حنطة سوداء','برغل,فريكة,هريس,جريش,كينوا,رز أسمر,شوفان,دخن,حنطة,معكرونة قمح كامل,رز بري',''],
+['الخضار النشوية','yes','يقطين، كوسا، بطاطس، جزر، بطاطا حلوة، يام، زهرة، ذرة','يقطين,قرع,كوسا,بطاطس,بطاطا,جزر,بطاطا حلوة,يام,زهرة,قرنبيط,ذرة',''],
+['خضار السلطة','yes','خس، بقدونس، خيار، طماطم، جزر، كزبرة، جرجير، شمندر، بصل أخضر، سبانخ، خرشوف','خس,بقدونس,خيار,طماطم,بندورة,جرجير,شمندر,بنجر,بصل أخضر,خرشوف,سلق,سلطة,فطر,مشروم,سبانخ',''],
+['البصل والثوم المطبوخان','yes','للتخلص من السموم — أضفها للشوربات','بصل,ثوم',''],
+['الكزبرة','yes','عصيرها يومياً يساعد على التخلص من السموم','كزبرة',''],
+['الفاكهة','yes','عنب، كيوي، توت، مانجا، رمان، أناناس، تفاح — قبل الوجبة بنصف ساعة','عنب,كيوي,توت,مانجا,مانجو,رمان,أناناس,تفاح,برتقال,فراولة,فواكه,فاكهة',''],
+['الفواكه المجففة المنقوعة','yes','تين، مشمش، زبيب أسود، قراصيا','تين,مشمش,زبيب,قراصيا,برقوق',''],
+['الأفوكادو','yes','في الجواكامولي بالفطور','أفوكادو,افوكادو,جواكامولي',''],
+['البذور','yes','يقطين، تباع الشمس، شيا','بذر يقطين,بذور يقطين,بذور شيا,شيا,بذر تباع الشمس,لب,فصفص',''],
+['اللوز والكاجو والبندق والفستق','yes','مصادر مغنيسيوم (بلا زبدة)','لوز,كاجو,بندق,فستق,فستق حلبي,مكسرات',''],
+['الكستناء والفشار','yes','وجبة خفيفة ٢','كستناء,فشار,بوب كورن',''],
+['الكاكاو المر','yes','وجبة خفيفة ١','كاكاو,كاكاو خام,شوكولاتة داكنة',''],
+['ماء جوز الهند','yes','وجبة خفيفة ومصدر بوتاسيوم','ماء جوز الهند,جوز هند',''],
+['شاي القراص وشاي الزعتر','yes','بديل الشاي','قراص,زعتر,نعناع,ميرامية,دارسين,مردقوش',''],
+['قهوة الهندباء وقهوة الشعير','yes','بدائل القهوة','هندباء,شعير,قهوة الشعير,تشيكوري',''],
+['البهارات','yes','زنجبيل، هيل، كركم، كزبرة، كمون، قرفة، قرنفل — ترفع الأيض','زنجبيل,هيل,كركم,كمون,قرفة,قرنفل,بهارات,زعفران,فلفل أسود',''],
+['قشور السيليوم','yes','ملعقة طعام في كوب ماء لخفض الكوليسترول','سيليوم,psyllium,قشور',''],
+['الفطر الريشي','yes','ملعقة صغيرة مرتين إلى ثلاث بالأسبوع','ريشي,reishi',''],
+['خل التفاح','yes','ملعقة صغيرة مع السلطة','خل,خل تفاح',''],
+['ملح إبسوم (للنقع فقط)','yes','ملعقتان في حوض ماء، نصف ساعة قبل النوم، ٣ مرات بالأسبوع','إبسوم,ابسوم,ملح انجليزي,ملح إنجليزي',''],
+['الماء','yes','٦ إلى ٨ أكواب يومياً — يفضل غير المفلور','ماء,مويه,موية',''],
+];
+
+/* ============ RECIPES (all within the plan's rules) ============ */
+const COOK='اطبخ في قدر ستانلس ستيل أو فخار أو زجاج — لا ألمنيوم ولا حديد.';
+const R=[
+{id:'lentil',n:'شوربة العدس بالكزبرة',m:'dinner',t:35,s:3,g:'ع',
+ i:['كوب عدس أحمر مغسول','بصلة مفرومة','٣ فصوص ثوم','جزرة مقطعة','ملعقة صغيرة كمون','نصف ملعقة صغيرة كركم','٥ أكواب ماء','حفنة كزبرة طازجة مفرومة','ملعقة زيت زيتون','رشة ملح الهمالايا وعصرة ليمون'],
+ st:['قلّب البصل في زيت الزيتون على نار هادئة حتى يذبل.','أضف الثوم والجزر والكمون والكركم وقلّب دقيقة.','أضف العدس والماء، واتركه يغلي ثم خفّف النار ٢٥ دقيقة حتى ينضج.','اهرس الشوربة بالخلاط اليدوي.','أطفئ النار وأضف الكزبرة والملح وعصرة الليمون.'],
+ w:'العدس والكزبرة والثوم المطبوخ كلها في قائمة التخلص من السموم ورفع النحاس.'},
+{id:'pumpkin',n:'شوربة اليقطين والجزر',m:'dinner',t:40,s:4,g:'ي',
+ i:['٣ أكواب يقطين مقطع','٢ جزر','بصلة','٣ فصوص ثوم كاملة','قطعة زنجبيل صغيرة','٤ أكواب ماء','نصف كوب حليب جوز الهند (اختياري)','ملعقة زيت زيتون','ملح وقرفة'],
+ st:['قلّب البصل في زيت الزيتون حتى يذبل.','أضف اليقطين والجزر والثوم الكامل والزنجبيل.','أضف الماء واترك ٣٠ دقيقة على نار هادئة.','اخلطها ناعمة، وأضف حليب جوز الهند والملح.','قدّمها برشة قرفة.'],
+ w:'اليقطين من أعلى مصادر البوتاسيوم في التقرير، والقرفة والزنجبيل ترفعان الأيض.'},
+{id:'zucchini',n:'شوربة الكوسا والجزر',m:'dinner',t:30,s:3,g:'ك',
+ i:['٣ حبات كوسا','٢ جزر','بصلة','٣ فصوص ثوم','حبة بطاطس صغيرة (للقوام)','٤ أكواب ماء','كزبرة ونعناع','زيت زيتون، ملح، فلفل أسود'],
+ st:['قلّب البصل والثوم بزيت الزيتون.','أضف الخضار مقطعة والماء، واتركها ٢٠ دقيقة.','اخلطها، ثم أضف الكزبرة والنعناع قبل التقديم.'],
+ w:'البطاطس تعطي قواماً كريمياً بدون كريمة أو حليب.'},
+{id:'svbean',n:'شوربة البطاطا الحلوة والفاصوليا السوداء',m:'dinner',t:40,s:4,g:'ب',
+ i:['بطاطا حلوة كبيرة مكعبات','كوب فاصوليا سوداء منقوعة ومسلوقة','بصلة و٣ فصوص ثوم','طماطم طازجة مبشورة','ملعقة صغيرة كمون ونصف بابريكا','٤ أكواب ماء','كزبرة وليمون','زيت زيتون وملح'],
+ st:['قلّب البصل والثوم والكمون بزيت الزيتون.','أضف الطماطم ثم البطاطا الحلوة والماء.','بعد ١٥ دقيقة أضف الفاصوليا واتركها ١٠ دقائق.','اهرس نصفها واترك النصف قطعاً، وزينها بالكزبرة.'],
+ w:'غنية بالمغنيسيوم والبوتاسيوم، وهما مما يحتاج رفعه حسب التحليل.'},
+{id:'mushroom',n:'شوربة الفطر البني بدون كريمة',m:'dinner',t:30,s:3,g:'ف',
+ i:['٢٥٠غ فطر بني','بصلة','٣ فصوص ثوم','حبة بطاطس','٣ أكواب ماء','زعتر طازج','زيت زيتون، ملح، فلفل أسود'],
+ st:['حمّر الفطر في زيت الزيتون بقدر ستانلس حتى يأخذ لوناً.','أضف البصل والثوم والزعتر.','أضف البطاطس والماء ٢٠ دقيقة.','اخلط نصفها لتصبح كريمية دون أي ألبان.'],
+ w:'الفطر البني من مصادر النحاس المذكورة في التقرير.'},
+{id:'foul',n:'فول مدمس بزيت الزيتون والكمون',m:'breakfast',t:15,s:2,g:'ف',
+ i:['كوب فول مطبوخ (يفضل منقوع ومسلوق منزلياً)','فص ثوم مهروس','عصير نصف ليمونة','نصف ملعقة كمون','ملعقة زيت زيتون','طماطم وبقدونس مفروم','رشة ملح الهمالايا'],
+ st:['سخّن الفول مع قليل من مائه.','اهرسه جزئياً مع الثوم والكمون والليمون.','زيّنه بالطماطم والبقدونس وزيت الزيتون.','قدّمه مع خبز الشوفان أو خبز الحبوب الكاملة.'],
+ w:'ابدأ بالفاكهة قبل نصف ساعة، ثم السلطة، ثم الخبز والفول.'},
+{id:'hummus',n:'حمص بالليمون بدون طحينة',m:'breakfast',t:15,s:3,g:'ح',
+ i:['كوبان حمص مسلوق طري','فص ثوم','عصير ليمونة','٣ ملاعق زيت زيتون','ملعقة كمون','ماء السلق البارد','ملح الهمالايا'],
+ st:['اخلط الحمص مع الثوم والليمون والكمون.','أضف ماء السلق تدريجياً حتى القوام الكريمي.','أضف زيت الزيتون وقلّب، وزيّنه بالبقدونس.'],
+ w:'الطحينة من أغذية "قلّل منها" لغناها بالكالسيوم، لذلك هذه النسخة بدونها.'},
+{id:'guac',n:'جواكامولي',m:'breakfast',t:10,s:2,g:'ج',
+ i:['حبة أفوكادو ناضجة','ربع بصلة مفرومة ناعم','طماطم صغيرة مفرومة','كزبرة','عصير نصف ليمونة','رشة ملح وكمون'],
+ st:['اهرس الأفوكادو بالشوكة.','أضف باقي المكونات وقلّب.','قدّمها مع خبز الذرة أو خبز الكينوا.'],
+ w:'بديل ممتاز للجبن واللبنة في الفطور.'},
+{id:'chia',n:'بودنغ الشيا والشوفان بحليب جوز الهند',m:'breakfast',t:5,s:1,g:'ش',
+ i:['ملعقتان بذور شيا','٣ ملاعق شوفان','كوب حليب جوز الهند','ملعقة صغيرة عسل أو ستيفيا','رشة قرفة وهيل','توت أو رمان للتزيين'],
+ st:['اخلط كل المكونات في برطمان زجاجي.','اتركه في الثلاجة ليلة كاملة.','زيّنه صباحاً بالتوت أو الرمان.'],
+ w:'بذور الشيا من أعلى مصادر المغنيسيوم في التقرير (١١١ ملغ لكل ٣٠غ).'},
+{id:'spinegg',n:'بيض عضوي بالسبانخ والبصل',m:'breakfast',t:15,s:1,g:'ب',q:'egg',
+ i:['٢ بيض عضوي','كوبان سبانخ طازجة','نصف بصلة','فص ثوم','ملعقة زيت زيتون','كمون وفلفل أسود وملح'],
+ st:['قلّب البصل والثوم بزيت الزيتون في مقلاة ستانلس أو سيراميك.','أضف السبانخ حتى تذبل.','اكسر البيض فوقها وغطّه حتى ينضج.'],
+ w:'البيض ٣ مرات أسبوعياً كحد أقصى — سجّلها في عدّاد الأسبوع.'},
+{id:'salmon',n:'سلمون بالفرن مع بطاطا حلوة',m:'lunch',t:35,s:2,g:'س',
+ i:['قطعتا سلمون نرويجي','بطاطا حلوة مكعبات','ليمونة','٣ فصوص ثوم','شبت أو كزبرة','ملعقتان زيت زيتون','ملح وفلفل أسود'],
+ st:['ضع البطاطا الحلوة في صينية زجاج أو سيراميك مع زيت الزيتون والملح، واخبزها ١٥ دقيقة على ٢٠٠°.','أضف السلمون فوقه الثوم والليمون والشبت.','أكمل الخبز ١٢–١٥ دقيقة.'],
+ w:'اخبزه في صينية زجاج أو سيراميك بدل ورق الألمنيوم. خذ Betaine HCL مع هذه الوجبة.'},
+{id:'seabass',n:'سيباس بالليمون والكزبرة',m:'lunch',t:30,s:2,g:'س',
+ i:['سمكة سيباس منظفة','ليمونة شرائح','كزبرة وثوم مهروس','كمون وكركم','زيت زيتون','كوسا وجزر شرائح'],
+ st:['تبّل السمكة من الداخل والخارج بالثوم والكزبرة والكمون والكركم.','رصّ الخضار في صينية زجاج، وضع السمكة فوقها مع الليمون.','اخبزها على ٢٠٠° حوالي ٢٥ دقيقة.'],
+ w:'الكوسا والجزر من قائمة نشويات الغداء فلا تحتاج نشويات إضافية.'},
+{id:'kabsa',n:'كبسة لحم بالرز الأسمر',m:'lunch',t:90,s:4,g:'ك',
+ i:['نصف كيلو لحم غنم','كوبان رز أسمر منقوع ساعة','بصلة','طماطم مبشورة','بهارات: هيل، قرنفل، قرفة، كمون، فلفل أسود، ليمون أسود','ملعقتان زيت زيتون','ماء وملح'],
+ st:['قلّب البصل بزيت الزيتون ثم أضف اللحم والبهارات.','أضف الطماطم والماء، واترك اللحم ينضج ٥٠ دقيقة.','أخرج اللحم وقس المرق (كوبان ونصف لكل كوبين رز).','أضف الرز الأسمر واتركه على نار هادئة ٣٥–٤٠ دقيقة.','رصّ اللحم فوقه وقدّمه مع السلطة أولاً.'],
+ w:'بدون مكعبات مرق (فيها غلوتامات E621) وبدون سمن — نكهتها من البهارات الكاملة.'},
+{id:'jareesh',n:'جريش بالدجاج بدون لبن',m:'lunch',t:75,s:4,g:'ج',q:'chicken',
+ i:['كوب جريش منقوع','صدر دجاج أو قطع دجاج','بصلة كبيرة','٣ فصوص ثوم','كمون وفلفل أسود وهيل','٥ أكواب ماء','للوجه: بصل مكرمل بزيت الزيتون وليمون أسود'],
+ st:['اسلق الدجاج مع البصل والهيل ثم فتته.','أضف الجريش إلى المرق واتركه على نار هادئة ساعة مع التحريك.','أضف الدجاج والكمون واهرسه قليلاً.','زيّنه بالبصل المكرمل بزيت الزيتون.'],
+ w:'الجريش التقليدي يُطبخ باللبن — هنا المرق بديل عن الألبان. الدجاج مرتين بالأسبوع فقط.'},
+{id:'freekeh',n:'فريكة باللحم والبصل',m:'lunch',t:60,s:4,g:'ف',
+ i:['كوب فريكة مغسولة','٣٠٠غ لحم غنم مكعبات','بصلة','قرفة وهيل وبهار','زيت زيتون','٣ أكواب ماء','لوز محمص للتزيين'],
+ st:['اسلق اللحم مع البصل والبهارات حتى ينضج.','قلّب الفريكة بقليل من زيت الزيتون ثم أضف المرق.','اتركها ٢٥–٣٠ دقيقة على نار هادئة.','زيّنها باللحم واللوز.'],
+ w:'اللوز مصدر مغنيسيوم؛ الممنوع هو زبدة اللوز فقط.'},
+{id:'quinoa',n:'كينوا بالخضار والنخي',m:'lunch',t:30,s:3,g:'ك',
+ i:['كوب كينوا مغسولة جيداً','كوب نخي (حمص) مسلوق','جزرة وكوسا مكعبات','بصل أخضر وبقدونس','عصير ليمونة','زيت زيتون وكمون وملح'],
+ st:['اطبخ الكينوا في كوبين ماء ١٥ دقيقة.','قلّب الجزر والكوسا بزيت الزيتون والكمون.','اخلط الكل مع النخي والليمون والأعشاب.'],
+ w:'كينوا + نخي = نشويات وبروتين في طبق واحد من قائمة الغداء.'},
+{id:'burghul',n:'برغل بالطماطم والبصل',m:'lunch',t:30,s:3,g:'ب',
+ i:['كوب برغل خشن','بصلة شرائح','٣ طماطم مبشورة (بدون معجون معلب)','فلفل أخضر','ملعقتان زيت زيتون','كمون وملح','كوب ونصف ماء'],
+ st:['قلّب البصل بزيت الزيتون حتى يذبل.','أضف الطماطم والفلفل والتوابل ٥ دقائق.','أضف البرغل والماء، واتركه على نار هادئة ١٥ دقيقة.'],
+ w:'الطماطم الطازجة بدل المعجون المعلب.'},
+{id:'energy',n:'كرات الطاقة بالتمر والكاكاو',m:'snack2',t:15,s:12,g:'ك',
+ i:['كوب تمر منزوع النوى','نصف كوب بذر يقطين','ربع كوب شوفان','ملعقتان كاكاو مر','ملعقة بذور شيا','رشة قرفة وهيل'],
+ st:['اطحن بذر اليقطين والشوفان.','أضف التمر والكاكاو والشيا واخلط حتى تتماسك.','شكّلها كرات صغيرة واحفظها في علبة زجاج بالثلاجة.'],
+ w:'بدون زبدة مكسرات ولا سكر — حلاوتها من التمر.'},
+{id:'millet',n:'كيكة الدخن',m:'snack2',t:45,s:8,g:'د',
+ i:['كوب طحين دخن','نصف كوب طحين شوفان','كوب موز مهروس أو تمر منقوع مهروس','ثلث كوب زيت زيتون','ثلثا كوب حليب جوز الهند','ملعقة صغيرة كريم التارتار + نصف بيكربونات (بدل البيكنج باودر)','قرفة وهيل'],
+ st:['اخلط المكونات الجافة، ثم الرطبة في وعاء آخر.','ادمجهما بلطف.','اخبزها في قالب زجاج أو سيليكون ٣٥ دقيقة على ١٨٠°.'],
+ w:'بعض أنواع البيكنج باودر فيها ألمنيوم، لذلك نستخدم كريم التارتار والبيكربونات.'},
+{id:'figshake',n:'سموذي منقوع التين',m:'breakfast',t:5,s:1,g:'ت',
+ i:['٦ حبات تين مجفف منقوعة ليلة بكوب ماء','كوب حليب اللوز أو جوز الهند','ملعقة صغيرة عسل','٦ حبات لوز أو كاجو'],
+ st:['اخلط التين مع ماء النقع.','أضف الحليب النباتي والعسل واللوز.','اشربه صباحاً على الريق.'],
+ w:'الوصفة كما وردت في ملاحظات النظام.'},
+{id:'chicory',n:'قهوة الهندباء المثلجة',m:'snack1',t:10,s:1,g:'ق',
+ i:['ملعقة أو ملعقتان مسحوق هندباء محمص','كوب ماء','كوب حليب نباتي','ملعقة صغيرة فانيليا عضوية','ملعقة هيل ورشة زعفران','ثلج'],
+ st:['ضع الهندباء مع الماء في قدر صغير حتى يغلي.','خفّف النار ٥–١٠ دقائق.','أضف الهيل والزعفران واخلط.','صبّه على الحليب النباتي والفانيليا والثلج.'],
+ w:'بديل القهوة الممنوعة (غنية بالكوبالت).'},
+{id:'coriander',n:'مكعبات عصير الكزبرة',m:'snack1',t:10,s:14,g:'ز',
+ i:['٢ ربطة كزبرة طازجة','نصف كوب ماء','عصرة ليمون'],
+ st:['اغسل الكزبرة جيداً بالماء والخل والملح.','اخلطها مع الماء والليمون.','صبّها في قوالب الثلج واحفظها في الفريزر.','أضف مكعباً يومياً لكوب ماء أو عصير خضار طازج.'],
+ w:'من توصيات التخلص من السموم في النظام.'},
+];
+
+/* ============ STATE ============ */
+const ENV=(window.MAIDATI&&window.MAIDATI.env)||'artifact';
+const KEY='maidati.v1'+(ENV==='staging'?'-staging':'');
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){S=null}
+S=Object.assign({plan:{},water:{},supp:{},q:{},times:{},rem:{},favs:[],ai:[],pause:false,tab:'today',fired:{}},S||{});
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+const pad=n=>String(n).padStart(2,'0');
+const dkey=(d=new Date())=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+function wkey(d=new Date()){const t=new Date(d);t.setHours(0,0,0,0);t.setDate(t.getDate()-t.getDay());return 'w'+dkey(t)} // week starts Sunday
+const mkey=(d=new Date())=>'m'+d.getFullYear()+pad(d.getMonth()+1);
+const toMin=s=>{const[h,m]=s.split(':').map(Number);return h*60+m};
+const fromMin=m=>{m=((m%1440)+1440)%1440;return pad(Math.floor(m/60))+':'+pad(m%60)};
+const ar=s=>String(s).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+function fmt12(t){let[h,m]=t.split(':').map(Number);const p=h<12?'ص':'م';h=h%12||12;return ar(h+':'+pad(m))+' '+p}
+const mealTime=id=>S.times[id]||MEALS.find(m=>m.id===id).time;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function norm(s){return String(s).toLowerCase().replace(/[ً-ٰٟ]/g,'').replace(/[أإآا]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/ؤ/g,'و').replace(/ئ/g,'ي').replace(/^ال/,'').replace(/\s+ال/g,' ').trim()}
+
+/* the day's schedule — derived from meal times */
+function schedule(){
+  const b=toMin(mealTime('breakfast')),l=toMin(mealTime('lunch')),d=toMin(mealTime('dinner'));
+  const items=[
+    {id:'k2',at:b-30,t:'مكمل K2',d:'حبة Circulation Max قبل الفطور',kind:'supp'},
+    {id:'bfruit',at:b-30,t:'فاكهة الفطور',d:'اختيارك من الفاكهة/المنقوع — قبل الفطور بنصف ساعة',kind:'meal',meal:'breakfast'},
+    {id:'breakfast',at:b,t:'الفطور',d:'سلطة ← نشويات ← الطبق ← زيتون',kind:'meal',meal:'breakfast'},
+    {id:'whey1',at:b+30,t:'مصل اللبن',d:'بعد الفطور بنصف ساعة',kind:'meal'},
+    {id:'cocktail',at:b+45,t:'Pickleball Cocktail',d:'يُذاب في الماء بعد الفطور',kind:'supp'},
+    {id:'snack1',at:toMin(mealTime('snack1')),t:'وجبة خفيفة ١',d:'',kind:'meal',meal:'snack1'},
+    {id:'lfruit',at:l-30,t:'فاكهة ما قبل الغداء',d:'قبل الغداء بنصف ساعة',kind:'meal',meal:'lunch'},
+    {id:'lunch',at:l,t:'الغداء',d:'سلطة ← نشويات ← بروتين ← زيتون · خذ Betaine HCL مع البروتين',kind:'meal',meal:'lunch'},
+    {id:'snack2',at:toMin(mealTime('snack2')),t:'وجبة خفيفة ٢',d:'',kind:'meal',meal:'snack2'},
+    {id:'mag',at:d-30,t:'مكمل المغنيسيوم',d:'Magnesium Glycinate + B6 قبل العشاء',kind:'supp'},
+    {id:'dinner',at:d,t:'العشاء',d:'شوربة مع البصل والثوم أو الكزبرة · زيتون',kind:'meal',meal:'dinner'},
+    {id:'whey2',at:d+30,t:'مصل اللبن',d:'بعد العشاء بنصف ساعة',kind:'meal'},
+    {id:'soak',at:toMin(S.times.soak||'21:30'),t:'نقع القدم بملح إبسوم',d:'ملعقتان في حوض ماء، نصف ساعة قبل النوم (أحد، ثلاثاء، خميس)',kind:'care',days:[0,2,4]},
+  ];
+  return items.filter(x=>!(S.pause&&x.kind==='supp')).filter(x=>!x.days||x.days.includes(new Date().getDay())).sort((a,b)=>a.at-b.at);
+}
+
+/* ============ SHELL ============ */
+const TABS=[
+ {id:'today',t:'اليوم',i:'<path d="M4 7h16M4 7v12h16V7M4 7l2-3h12l2 3M9 12h6"/>'},
+ {id:'search',t:'ابحث',i:'<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4-4"/>'},
+ {id:'plan',t:'وجباتي',i:'<path d="M5 3v8a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V3M7 13v8M16 3c-2 1-3 4-3 7h3v11"/>'},
+ {id:'recipes',t:'وصفات',i:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11M9 8h6"/>'},
+ {id:'remind',t:'التذكير',i:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0"/>'},
+];
+const tabsEl=document.getElementById('tabs');
+tabsEl.innerHTML=TABS.map(t=>`<button class="tab" role="tab" data-tab="${t.id}" aria-selected="false"><span class="pip"><svg viewBox="0 0 24 24">${t.i}</svg></span>${t.t}</button>`).join('');
+tabsEl.onclick=e=>{const b=e.target.closest('[data-tab]');if(b)go(b.dataset.tab)};
+function go(id){S.tab=id;save();render();window.scrollTo({top:0})}
+const main=document.getElementById('main');
+function render(){
+  tabsEl.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===S.tab));
+  ({today:vToday,search:vSearch,plan:vPlan,recipes:vRecipes,remind:vRemind}[S.tab]||vToday)();
+}
+document.getElementById('today-lbl').textContent=new Date().toLocaleDateString('ar-SA-u-ca-gregory',{weekday:'long',day:'numeric',month:'long'});
+
+/* theme toggle */
+document.getElementById('theme-btn').onclick=()=>{
+  const r=document.documentElement,cur=r.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+  r.dataset.theme=cur==='dark'?'light':'dark';try{localStorage.setItem('maidati.theme',r.dataset.theme)}catch(e){}
+};
+if(ENV==='staging'){const b=document.createElement('span');b.className='badge b-limit';b.textContent='تجريبي';document.querySelector('.brand h1').append(' ',b)}
+try{const th=localStorage.getItem('maidati.theme');if(th)document.documentElement.dataset.theme=th}catch(e){}
+
+/* ============ TODAY ============ */
+function todayPlan(){return S.plan[dkey()]||(S.plan[dkey()]={})}
+function choiceText(mealId,partK){const p=todayPlan()[mealId];return p&&p[partK]}
+function mealSummary(meal){
+  return meal.parts.map(p=>{
+    const v=p.fixed?p.d:(choiceText(meal.id,p.k)||'— لم تختر بعد');
+    return {t:p.t,v:v.split('|')[0]};
+  });
+}
+function vToday(){
+  const now=new Date(),nm=now.getHours()*60+now.getMinutes();
+  const sch=schedule();
+  const next=sch.find(x=>x.at>=nm-10&&x.kind==='meal'&&x.meal)||null;
+  const nextAny=sch.find(x=>x.at>nm);
+  const meal=next?MEALS.find(m=>m.id===next.meal):null;
+  const water=S.water[dkey()]||0, supp=S.supp[dkey()]||{};
+  let nowHtml;
+  if(meal){
+    const diff=next.at-nm;
+    const when=diff<=0?'الآن':diff<60?`بعد ${ar(diff)} دقيقة`:`بعد ${ar(Math.floor(diff/60))} س ${diff%60?ar(diff%60)+' د':''}`;
+    const rows=mealSummary(meal).map(r=>`<div class="now-step"><b>${esc(r.t)}</b><span>${esc(r.v)}</span></div>`).join('');
+    nowHtml=`<section class="card now">
+      <div class="spread"><span class="label">الوجبة القادمة · ${fmt12(fromMin(next.at))}</span><span class="count">${when}</span></div>
+      <h2>${esc(next.t)}</h2>
+      <div class="now-steps">${rows}</div>
+      <div class="row btns"><button class="btn ghost-on-olive" data-act="pick" data-meal="${meal.id}">اختر لي تلقائياً</button><button class="btn ghost-on-olive" data-act="goplan">عدّل الاختيارات</button></div>
+    </section>`;
+  }else{
+    nowHtml=`<section class="card now"><span class="label">انتهت وجبات اليوم</span><h2>تصبح على خير</h2><p class="small" style="margin:.3em 0 0;opacity:.9">جهّز منقوع التين أو الزبيب الآن لفطور الغد، وانقع البقوليات إن كان غداء الغد منها.</p></section>`;
+  }
+  const tl=sch.map(x=>{const cls=x.at<nm-15?'past':(nextAny&&x.id===nextAny.id?'cur':'');return `<div class="tl ${cls}"><time>${fmt12(fromMin(x.at))}</time><div><div class="tl-t">${esc(x.t)}</div>${x.d?`<div class="tl-d">${esc(x.d)}</div>`:''}</div></div>`}).join('');
+  const cups=Array.from({length:8},(_,i)=>`<button class="cup ${i<water?'on':''}" data-act="water" data-n="${i+1}" aria-label="كوب ${ar(i+1)}"></button>`).join('');
+  const supps=S.pause?`<p class="small muted" style="margin:.5em 0 0">المكملات موقوفة الآن (صيام أو دورة شهرية). النظام الغذائي مستمر.</p>`:
+    `<div class="checks">${SUPPS.map(s=>`<button class="chk ${supp[s.id]?'on':''}" data-act="supp" data-id="${s.id}"><span class="box"></span><span><div class="t">${esc(s.t)}</div><div class="d">${esc(s.d)}</div></span></button>`).join('')}</div>`;
+  main.innerHTML=`<div class="view">
+    ${nowHtml}
+    <section class="card">
+      <div class="spread"><h3 style="font-size:17px">الماء</h3><span class="label">${ar(water)} من ٨ أكواب · الهدف ٦–٨</span></div>
+      <div class="cups">${cups}</div>
+    </section>
+    <section class="card">
+      <div class="spread"><h3 style="font-size:17px">مكملات اليوم</h3><span class="label">لمدة ٣ شهور</span></div>
+      ${supps}
+      <div class="pause"><span>إيقاف مؤقت (صيام، رمضان، الدورة الشهرية، الحمل)</span><button class="sw" role="switch" aria-checked="${S.pause}" data-act="pause" aria-label="إيقاف المكملات"></button></div>
+    </section>
+    <section class="card">
+      <h3 style="font-size:17px">جدول اليوم</h3>
+      <div class="timeline" style="margin-top:6px">${tl}</div>
+    </section>
+    <section class="card">
+      <div class="spread"><h3 style="font-size:17px">حصص محدودة</h3><span class="label">تتجدد كل أسبوع / شهر</span></div>
+      <div class="quotas">${QUOTAS.map(quotaHtml).join('')}</div>
+    </section>
+    ${rulesHtml()}
+  </div>`;
+}
+function quotaVal(q){const k=q.per==='w'?wkey():mkey();return (S.q[k]||{})[q.id]||0}
+function quotaHtml(q){
+  const v=quotaVal(q),pc=Math.min(100,v/q.max*100),cls=v>q.max?'over':v===q.max?'full':'';
+  return `<div class="q ${cls}"><div class="small">${esc(q.t)}</div><div class="spread"><span class="n">${ar(v)}<span class="small muted"> / ${ar(q.max)}</span></span><span class="label">${q.per==='w'?'بالأسبوع':'بالشهر'}</span></div><div class="bar"><i style="width:${pc}%"></i></div><div class="ctl"><button data-act="q" data-id="${q.id}" data-d="-1" aria-label="إنقاص">−</button><button data-act="q" data-id="${q.id}" data-d="1" aria-label="زيادة">+</button></div></div>`;
+}
+function rulesHtml(){
+  return `<details class="card rules"><summary>قواعد النظام باختصار</summary><div class="rl">
+    <div><b>ترتيب كل وجبة:</b> فاكهة قبلها بنصف ساعة ← خضار/سلطة ← نشويات ← بروتين. اختر صنفاً واحداً من كل فقرة.</div>
+    <div><b>الدهون:</b> زيت الزيتون فقط. لا زبدة، لا سمن، لا كريمة، لا زيت جوز الهند.</div>
+    <div><b>ممنوع:</b> الألبان والأجبان واللبنة، الصويا، البروكلي، الباذنجان، الخروب، القهوة، الشاي الأحمر، البابونج، اليانسون، الغازيات، السكر والطحين والرز الأبيض، اللحوم المصنعة، التونة والسردين.</div>
+    <div><b>السكر المسموح:</b> سكر القصب أو ستيفيا عضوية باعتدال.</div>
+    <div><b>الأواني:</b> ستانلس أو فخار أو زجاج. تجنّب الألمنيوم والحديد، والغلاية وصانعة القهوة الكهربائية.</div>
+    <div><b>التخلص من السموم:</b> بصل وثوم مطبوخان، كزبرة يومياً، ٣ مكسرات برازيلية مرتين بالأسبوع، فجل مسلوق مرتين بالأسبوع. اغسل الخضار بالماء والخل والملح.</div>
+    <div><b>البقوليات والقولون:</b> انقعها ليلة كاملة وكُلها بعد الفاكهة والسلطة والنشويات. إن استمر الانتفاخ أوقفها مؤقتاً.</div>
+    <div><b>في الصيام:</b> الغداء يصبح الإفطار، والعشاء والفطور يصبحان السحور، والوجبات الخفيفة بينهما. أوقف المكملات.</div>
+    <div><b>المدة:</b> النظام من ٣ إلى ٦ شهور مع المتابعة. التعب والصداع في البداية طبيعيان.</div>
+    <div><b>مهم:</b> لا توقف أي دواء وصفه لك الطبيب. إن ظهرت أعراض بعد المكملات أوقفها وتواصل مع الأخصائية.</div>
+    <div class="muted small">طعام غير مصنّف في النظام يمكن تناوله باعتدال. وإن جاء الصنف في "تجنب" و"تناول" معاً فاعتبره من "تجنب".</div>
+  </div></details>`;
+}
+
+/* ============ SEARCH ============ */
+let lastQ='';
+function allOptions(){
+  const out=[];MEALS.forEach(m=>m.parts.forEach(p=>(p.opts||[]).forEach(o=>{const[n,lim]=o.split('|');out.push({n,lim,meal:m.name,part:p.t})})));return out;
+}
+const OPTS=allOptions();
+function searchAll(q){
+  const nq=norm(q);if(!nq)return null;
+  const words=nq.split(/\s+/);
+  const score=(hay)=>{hay=norm(hay);let s=0;for(const w of words){if(!w)continue;if(hay.includes(w))s+=w.length}return s};
+  const foods=F.map(f=>{const hay=[f[0],...f[3].split(',')];let best=0;for(const h of hay){const nh=norm(h);if(nh===nq)best=Math.max(best,100);else if(nh.startsWith(nq))best=Math.max(best,60);else if(nh.includes(nq)||(nq.includes(nh)&&nh.length>2))best=Math.max(best,40)}return{f,s:best}}).filter(x=>x.s).sort((a,b)=>b.s-a.s).slice(0,6);
+  const opts=OPTS.filter(o=>norm(o.n).includes(nq)).slice(0,8);
+  const recs=[...R,...S.ai].map(r=>({r,s:score(r.n)*3+score(r.i.join(' '))})).filter(x=>x.s).sort((a,b)=>b.s-a.s).slice(0,6).map(x=>x.r);
+  return{foods,opts,recs};
+}
+const STL={yes:'مسموح',limit:'باعتدال',no:'تجنّب',info:'غير مصنّف'};
+function vSearch(){
+  main.innerHTML=`<div class="view">
+    <div class="searchbox"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="ابحث عن أكلة أو مكوّن: قهوة، رز، جريش…" autocomplete="off" value="${esc(lastQ)}"></div>
+    <div class="chips" id="qchips">${['قهوة','رز','جبن','دجاج','تمر','شاي','بيض','خبز','سمك','طحينة','عدس','حلى'].map(c=>`<button class="chip" data-q="${c}">${c}</button>`).join('')}</div>
+    <section class="card" style="background:var(--fig-soft);border-color:transparent">
+      <div class="spread"><div><h3 style="font-size:17px">ماذا آكل الآن؟</h3><div class="small muted">اقتراح كامل للوجبة القادمة من خياراتك في النظام، مع وصفة مناسبة</div></div><button class="btn fig" data-act="whatnow">اقترح لي</button></div>
+      <div id="whatnow"></div>
+    </section>
+    <div id="results" class="res"></div>
+  </div>`;
+  const inp=document.getElementById('q');
+  inp.oninput=()=>{lastQ=inp.value;drawResults()};
+  document.getElementById('qchips').onclick=e=>{const c=e.target.closest('[data-q]');if(c){inp.value=lastQ=c.dataset.q;drawResults()}};
+  drawResults();
+}
+function drawResults(){
+  const box=document.getElementById('results');if(!box)return;
+  const r=searchAll(lastQ);
+  if(!r){box.innerHTML=`<p class="small muted" style="text-align:center;margin:8px 0">اكتب اسم أي طعام لتعرف حكمه في نظامك، وأين يدخل، ووصفاته.</p>`;return}
+  let h='';
+  if(r.foods.length){h+=`<div class="sec-t">الحكم في نظامك</div>`+r.foods.map(({f})=>`<div class="food"><span class="badge b-${f[1]}">${STL[f[1]]}</span><div><div class="nm">${esc(f[0])}</div><div class="nt">${esc(f[2])}</div>${f[4]?`<div class="alt">البديل: ${esc(f[4])}</div>`:''}</div></div>`).join('')}
+  if(r.opts.length){h+=`<div class="sec-t">موجود في وجباتك</div>`+r.opts.map(o=>`<div class="food"><span class="badge ${o.lim?'b-limit':'b-yes'}">${o.lim?'باعتدال':'مسموح'}</span><div><div class="nm">${esc(o.n)}</div><div class="nt">${esc(o.meal)} ← ${esc(o.part)}${o.lim?' · '+esc(o.lim):''}</div></div></div>`).join('')}
+  if(r.recs.length){h+=`<div class="sec-t">وصفات</div><div class="rgrid">${r.recs.map(recCard).join('')}</div>`}
+  if(!r.foods.length&&!r.opts.length){
+    h+=`<div class="food"><span class="badge b-info">غير مصنّف</span><div><div class="nm">${esc(lastQ)}</div><div class="nt">غير مذكور في النظام. القاعدة: الطعام غير المصنّف يؤكل باعتدال، بشرط ألا يحتوي على شيء من قائمة التجنب (ألبان، سكر أبيض، دهون غير زيت الزيتون…).</div><div id="askbox"></div></div></div>`;
+  }
+  box.innerHTML=h;
+  if(!r.foods.length&&!r.opts.length)mountAsk(lastQ);
+}
+function recMeal(id){return {breakfast:'فطور',snack1:'خفيفة ١',lunch:'غداء',snack2:'خفيفة ٢',dinner:'عشاء'}[id]||''}
+function recCard(r){const olive=['lunch','snack1'].includes(r.m);return `<button class="rc" data-act="recipe" data-id="${esc(r.id)}"><div class="art ${olive?'o':''}">${esc(r.g||r.n[0])}</div><div class="bd"><div class="nm">${esc(r.n)}</div><div class="mt">${recMeal(r.m)} · ${ar(r.t)} دقيقة${r.ai?' · من Claude':''}</div></div></button>`}
+
+function randOf(a){return a[Math.floor(Math.random()*a.length)]}
+function autoPick(mealId,force){
+  const meal=MEALS.find(m=>m.id===mealId),tp=todayPlan();tp[mealId]=tp[mealId]||{};
+  meal.parts.forEach(p=>{if(!p.opts)return;if(!force&&tp[mealId][p.k])return;
+    // respect quotas: skip options whose quota is used up
+    const ok=p.opts.filter(o=>{const n=o.split('|')[0];const q=quotaFor(n);return !q||quotaVal(q)<q.max});
+    tp[mealId][p.k]=randOf(ok.length?ok:p.opts)});
+  save();
+}
+function quotaFor(name){if(/بيض/.test(name))return QUOTAS.find(q=>q.id==='egg');if(/دجاج/.test(name))return QUOTAS.find(q=>q.id==='chicken');if(/شاي أخضر/.test(name))return QUOTAS.find(q=>q.id==='green');if(/^بط/.test(name))return QUOTAS.find(q=>q.id==='duck');if(/كبدة/.test(name))return QUOTAS.find(q=>q.id==='liver');if(/كوارع/.test(name))return QUOTAS.find(q=>q.id==='trotter');if(/ميرامية/.test(name))return QUOTAS.find(q=>q.id==='herbtea');return null}
+function nextMealId(){const nm=new Date().getHours()*60+new Date().getMinutes();const m=MEALS.find(m=>toMin(mealTime(m.id))>=nm-20);return m?m.id:'breakfast'}
+function whatNow(){
+  const id=nextMealId();autoPick(id,true);const meal=MEALS.find(m=>m.id===id);
+  const rows=mealSummary(meal).map(r=>`<div class="food" style="grid-template-columns:90px 1fr"><span class="small muted">${esc(r.t)}</span><span>${esc(r.v)}</span></div>`).join('');
+  const recs=R.filter(r=>r.m===id);const rec=recs.length?randOf(recs):null;
+  document.getElementById('whatnow').innerHTML=`<div class="res" style="margin-top:12px"><div class="sec-t">${esc(meal.name)} · ${fmt12(mealTime(id))}</div>${rows}${rec?`<div class="sec-t">جرّب وصفة</div><div class="rgrid">${recCard(rec)}</div>`:''}<div class="row"><button class="btn" data-act="whatnow">اقتراح آخر</button><span class="small muted">حُفظ في خطة اليوم</span></div></div>`;
+}
+
+/* ============ PLAN ============ */
+function vPlan(){
+  const tp=todayPlan();
+  main.innerHTML=`<div class="view">
+    <div class="spread"><div><h2 style="font-size:20px">وجبات اليوم</h2><div class="small muted">اختر صنفاً واحداً من كل فقرة، بالترتيب من الأعلى للأسفل.</div></div><button class="btn primary" data-act="pickall">اختر لي اليوم كله</button></div>
+    ${MEALS.map(m=>`<section class="card meal">
+      <div class="meal-h"><h3>${esc(m.name)}</h3><span class="tm">${fmt12(mealTime(m.id))}</span></div>
+      ${m.parts.map((p,i)=>`<div class="part"><span class="no">${ar(i+1)}</span><div><div class="pt">${esc(p.t)}</div>${p.fixed?`<div class="fixed">${esc(p.d)}</div>`:`<div class="pd">${esc(p.d)}</div><div class="chips">${p.opts.map(o=>{const[n,lim]=o.split('|');const on=(tp[m.id]||{})[p.k]===o;return `<button class="opt" aria-pressed="${on}" data-act="opt" data-meal="${m.id}" data-k="${p.k}" data-v="${esc(o)}">${esc(n)}${lim?`<br><span class="lim">${esc(lim)}</span>`:''}</button>`}).join('')}</div>`}</div></div>`).join('')}
+      ${m.note?`<div class="part"><span></span><div class="small muted">${esc(m.note)}</div></div>`:''}
+    </section>`).join('')}
+    <section class="card"><h3 style="font-size:17px">إضافات مفيدة</h3><div class="rl">
+      <div>قشور السيليوم: ملعقة طعام في كوب ماء أو عصير أو شوربة لخفض الكوليسترول.</div>
+      <div>الفطر الريشي: ملعقة صغيرة (٢غ) في أي مشروب، مرتين إلى ثلاث بالأسبوع.</div>
+      <div>بهارات ترفع الأيض: زنجبيل، هيل، كركم، كزبرة، كمون، قرفة، قرنفل.</div>
+      <div>مكونات السلطة: خس، بقدونس، خيار، طماطم، جزر، كزبرة، جرجير، شمندر، بصل أخضر، سبانخ، خرشوف.</div>
+    </div></section>
+  </div>`;
+}
+
+/* ============ RECIPES ============ */
+let rFilter='all';
+let sampleFn=null;
+function vRecipes(){
+  const list=[...S.ai,...R].filter(r=>rFilter==='all'||(rFilter==='fav'?S.favs.includes(r.id):r.m===rFilter));
+  const F2=[['all','الكل'],['breakfast','فطور'],['lunch','غداء'],['dinner','عشاء'],['snack1','خفيفة ١'],['snack2','خفيفة ٢'],['fav','المفضلة']];
+  main.innerHTML=`<div class="view">
+    <section class="card ai" id="aibox" ${sampleFn?'':'hidden'}>
+      <h3 style="font-size:17px">وصفة جديدة على مقاس نظامك</h3>
+      <p class="small muted" style="margin:.2em 0 .6em">اكتب ما عندك أو ما تشتهيه، ويكتب لك Claude وصفة كاملة تلتزم بقواعد النظام.</p>
+      <div style="display:grid;gap:8px">
+        <textarea id="ai-in" placeholder="مثال: عندي كوسا وعدس وأشتهي شيء حار للعشاء"></textarea>
+        <div class="row"><select id="ai-meal" class="field" style="width:auto;flex:1"><option value="">أي وجبة</option><option value="breakfast">فطور</option><option value="lunch">غداء</option><option value="dinner">عشاء</option><option value="snack1">وجبة خفيفة</option></select><button class="btn fig" id="ai-go">اكتب الوصفة</button></div>
+        <div id="ai-out" class="small"></div>
+      </div>
+    </section>
+    <div class="chips">${F2.map(([k,t])=>`<button class="chip" aria-pressed="${rFilter===k}" data-act="rf" data-k="${k}">${t}</button>`).join('')}</div>
+    <div class="rgrid">${list.map(recCard).join('')||'<p class="muted small">لا توجد وصفات هنا بعد.</p>'}</div>
+  </div>`;
+  const go=document.getElementById('ai-go');if(go)go.onclick=aiRecipe;
+}
+function findRec(id){return [...S.ai,...R].find(r=>r.id===id)}
+function openRecipe(id){
+  const r=findRec(id);if(!r)return;
+  const yt='https://www.youtube.com/results?search_query='+encodeURIComponent('طريقة عمل '+r.n.replace(/ بدون.*| على .*/,''));
+  const fav=S.favs.includes(r.id);
+  sheet(`<h2>${esc(r.n)}</h2>
+    <div class="row small muted" style="margin:4px 0 12px"><span>${recMeal(r.m)}</span>·<span>${ar(r.t)} دقيقة</span>·<span>${ar(r.s)} ${r.s>2?'حصص':'حصة'}</span>${r.ai?'<span class="badge b-info">كتبها Claude</span>':''}</div>
+    ${r.w?`<div class="rule">${esc(r.w)}</div>`:''}
+    <h3 style="font-size:16px;margin-top:14px">المكونات</h3>
+    <ul class="ing">${r.i.map((x,k)=>`<li><label><input type="checkbox" id="ing-${k}"> <span>${esc(x)}</span></label></li>`).join('')}</ul>
+    <h3 style="font-size:16px;margin-top:12px">الطريقة</h3>
+    <ol>${r.st.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
+    <div class="warnbox" style="margin-top:10px">${esc(COOK)}${r.q?' سجّل هذه الوجبة في عدّاد الحصص.':''}</div>
+    <div class="row" style="margin-top:14px">
+      <a class="btn fig" href="${yt}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>فيديو الطريقة على يوتيوب</a>
+      <button class="btn" data-act="fav" data-id="${esc(r.id)}">${fav?'إزالة من المفضلة':'أضف للمفضلة'}</button>
+      ${r.q?`<button class="btn" data-act="q" data-id="${r.q}" data-d="1">سجّلتها اليوم</button>`:''}
+      ${r.ai?`<button class="btn" data-act="delai" data-id="${esc(r.id)}">حذف</button>`:''}
+    </div>
+    <p class="small muted" style="margin-top:8px">فيديوهات يوتيوب عامة: إن ظهر فيها زبدة أو حليب أو جبن أو قدر ألمنيوم فاستبدلها بما في المكونات أعلاه.</p>`);
+}
+function sheet(html){
+  const o=document.getElementById('overlay');
+  o.innerHTML=`<div class="scrim" data-act="close"><div class="sheet" dir="rtl" role="dialog" aria-modal="true"><div class="grab"></div>${html}<div style="margin-top:14px"><button class="btn" data-act="close" style="width:100%;justify-content:center">إغلاق</button></div></div></div>`;
+  document.body.style.overflow='hidden';
+}
+function closeSheet(){document.getElementById('overlay').innerHTML='';document.body.style.overflow=''}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+
+/* ============ CLAUDE (optional — sample capability) ============ */
+const RULES=`قواعد نظام غذائي علاجي (أيض بطيء، مبني على تحليل معادن الشعر):
+- الدهن الوحيد المسموح: زيت الزيتون. ممنوع: زبدة، سمن، كريمة، زيت جوز الهند، زبدة المكسرات، الصلصات الجاهزة.
+- ممنوع: الحليب ومنتجات الألبان والأجبان واللبنة (مصل اللبن مسموح)، الصويا، البروكلي، الباذنجان، الخروب، السردين، التونة، السلامي واللحوم المصنعة، القهوة، الشاي الأحمر، البابونج، اليانسون، الكافيين، الغازيات، العصائر المعلبة، السكر الأبيض، الرز والخبز والطحين الأبيض، المحليات الصناعية، المواد الحافظة، مكعبات المرق وE621، البيكنج باودر (استخدم كريم التارتار + بيكربونات)، عرق السوس، البرسيم.
+- قلّل: الطحينة والسمسم.
+- محدود: دجاج مرتين/أسبوع، بيض عضوي 3 مرات/أسبوع، بط 1-2/شهر، كبدة مرة/شهر، شاي أخضر مرتين/أسبوع.
+- السكر المسموح: سكر القصب أو ستيفيا باعتدال. العسل والتمر مسموحان.
+- مسموح ومفضل: لحم غنم، سلمون، سيباس، ديك رومي، فول، فاصوليا، لوبيا، نخي، عدس، فاصوليا سوداء، برغل، فريكة، هريس، جريش، كينوا، رز أسمر، شوفان، دخن، حنطة سوداء، يقطين، كوسا، بطاطس، جزر، بطاطا حلوة، زهرة، يام، ذرة، فطر بني، سبانخ، أفوكادو، بذر يقطين، بذور شيا، لوز، كاجو، بندق، كاكاو مر، حليب جوز الهند/اللوز، خضار السلطة، فواكه طازجة، بصل وثوم مطبوخان، كزبرة، بهارات (زنجبيل، هيل، كركم، كمون، قرفة، قرنفل).
+- الطبخ في ستانلس أو فخار أو زجاج؛ لا ألمنيوم ولا حديد ولا ورق ألمنيوم.
+- هيكل الوجبات: الفطور = فاكهة/منقوع قبله بنصف ساعة + سلطة + خبز حبوب كاملة + طبق نباتي (أو بيض/ديك رومي). الغداء = فاكهة قبله + سلطة + نشويات + بروتين. العشاء = شوربة خضار مع بصل وثوم أو كزبرة. الوجبات الخفيفة بسيطة.`;
+async function initSample(){
+  try{if(!window.claude)return;const s=await window.claude.use('sample');if(s){sampleFn=s;const b=document.getElementById('aibox');if(b)b.hidden=false;const a=document.getElementById('askbox');if(a&&lastQ)mountAsk(lastQ)}}catch(e){}
+}
+const ERR={not_granted:'لم يُسمح بالاتصال بـClaude من هذه الصفحة.',rate_limited:'طلبات كثيرة، انتظر دقيقة ثم جرّب.',cancelled:'أُلغي الطلب.'};
+async function aiRecipe(){
+  const out=document.getElementById('ai-out'),btn=document.getElementById('ai-go');
+  const want=document.getElementById('ai-in').value.trim(),meal=document.getElementById('ai-meal').value;
+  if(!want){out.textContent='اكتب ما عندك أو ما تشتهيه أولاً.';return}
+  btn.disabled=true;out.textContent='يكتب Claude الوصفة… قد يستغرق ذلك نصف دقيقة.';
+  try{
+    const j=await sampleFn.json(`${RULES}
+
+الطلب: ${want}
+${meal?'الوجبة: '+recMeal(meal):''}
+اكتب وصفة عربية واحدة سهلة تلتزم بكل القواعد أعلاه (إن طلب الشخص مكوناً ممنوعاً فاستبدله واذكر ذلك في why).
+أعد JSON فقط بهذا الشكل:
+{"n":"اسم الطبق","m":"breakfast|lunch|dinner|snack1|snack2","t":30,"s":2,"i":["مكون بالكمية"],"st":["خطوة"],"w":"جملة قصيرة: لماذا تناسب النظام وما الذي استُبدل"}`,{modelTier:'default'});
+    if(!j||!j.n||!Array.isArray(j.i)||!Array.isArray(j.st))throw{code:'bad'};
+    const r={id:'ai'+Date.now(),n:String(j.n),m:['breakfast','lunch','dinner','snack1','snack2'].includes(j.m)?j.m:(meal||'lunch'),t:Number(j.t)||30,s:Number(j.s)||2,i:j.i.map(String),st:j.st.map(String),w:String(j.w||''),ai:true};
+    S.ai.unshift(r);S.ai=S.ai.slice(0,30);save();vRecipes();openRecipe(r.id);
+  }catch(e){out.textContent=ERR[e&&e.code]||'تعذّر الحصول على الوصفة الآن. جرّب بصياغة أخرى.';btn.disabled=false}
+}
+function mountAsk(q){
+  const box=document.getElementById('askbox');if(!box||!sampleFn)return;
+  box.innerHTML=`<button class="btn fig" style="margin-top:8px" id="ask-go">اسأل Claude عن "${esc(q)}"</button><div id="ask-out" class="small" style="margin-top:6px"></div>`;
+  document.getElementById('ask-go').onclick=async()=>{
+    const out=document.getElementById('ask-out');out.textContent='يراجع Claude قواعد النظام…';
+    try{const j=await sampleFn.json(`${RULES}\n\nهل "${q}" مناسب لهذا النظام؟ أعد JSON فقط: {"status":"yes|limit|no","reason":"سبب في جملة","alt":"بديل من المسموحات أو فارغ"}`,{modelTier:'quick'});
+      const st=['yes','limit','no'].includes(j.status)?j.status:'limit';
+      out.innerHTML=`<span class="badge b-${st}">${STL[st]}</span> ${esc(j.reason||'')}${j.alt?`<div class="alt">البديل: ${esc(j.alt)}</div>`:''}<div class="muted" style="margin-top:4px">رأي تقديري؛ عند الشك اسأل الأخصائية.</div>`;
+    }catch(e){out.textContent=ERR[e&&e.code]||'تعذّر السؤال الآن.'}
+  };
+}
+
+/* ============ REMINDERS ============ */
+const REMS=[
+ {id:'k2',t:'مكمل K2 + فاكهة الفطور',d:'قبل الفطور بنصف ساعة',base:'breakfast',off:-30,supp:1},
+ {id:'breakfast',t:'الفطور',d:'سلطة ← نشويات ← الطبق',base:'breakfast',off:0},
+ {id:'whey1',t:'مصل اللبن + Pickleball Cocktail',d:'بعد الفطور بنصف ساعة',base:'breakfast',off:30},
+ {id:'snack1',t:'وجبة خفيفة ١',d:'',base:'snack1',off:0},
+ {id:'lfruit',t:'فاكهة ما قبل الغداء',d:'قبل الغداء بنصف ساعة',base:'lunch',off:-30},
+ {id:'lunch',t:'الغداء + Betaine HCL',d:'سلطة ← نشويات ← بروتين',base:'lunch',off:0},
+ {id:'snack2',t:'وجبة خفيفة ٢',d:'',base:'snack2',off:0},
+ {id:'mag',t:'مكمل المغنيسيوم',d:'قبل العشاء بنصف ساعة',base:'dinner',off:-30,supp:1},
+ {id:'dinner',t:'العشاء',d:'شوربة مع بصل وثوم أو كزبرة',base:'dinner',off:0},
+ {id:'whey2',t:'مصل اللبن',d:'بعد العشاء بنصف ساعة',base:'dinner',off:30},
+ {id:'soak',t:'نقع القدم بملح إبسوم',d:'الأحد والثلاثاء والخميس',base:'soak',off:0,days:'SU,TU,TH'},
+ {id:'water',t:'اشرب كوب ماء',d:'كل ساعتين من ٩ صباحاً إلى ٩ مساءً',water:1},
+];
+const remTime=r=>r.water?null:fromMin(toMin(r.base==='soak'?(S.times.soak||'21:30'):mealTime(r.base))+r.off);
+const remOn=r=>S.rem[r.id]!==false;
+function gcal(r){
+  const t=remTime(r);const d=new Date();const[h,m]=t.split(':').map(Number);d.setHours(h,m,0,0);
+  const e=new Date(d.getTime()+15*60000);
+  const f=x=>x.getFullYear()+pad(x.getMonth()+1)+pad(x.getDate())+'T'+pad(x.getHours())+pad(x.getMinutes())+'00';
+  const rr=r.days?`RRULE:FREQ=WEEKLY;BYDAY=${r.days}`:'RRULE:FREQ=DAILY';
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Riyadh';
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('مائدتي: '+r.t)+'&details='+encodeURIComponent(r.d||'حسب نظامك الغذائي')+'&dates='+f(d)+'/'+f(e)+'&recur='+encodeURIComponent(rr)+'&ctz='+encodeURIComponent(tz);
+}
+function vRemind(){
+  const perm=('Notification' in window)?Notification.permission:'unsupported';
+  main.innerHTML=`<div class="view">
+    <section class="card">
+      <h3 style="font-size:17px">مواعيد وجباتك</h3>
+      <p class="small muted" style="margin:.2em 0 .6em">غيّرها لتناسب يومك، وستتحرك تذكيرات الفاكهة والمكملات ومصل اللبن معها تلقائياً.</p>
+      <div class="quotas">${[...MEALS.map(m=>[m.id,m.name]),['soak','نقع القدم']].map(([id,n])=>`<label class="q"><span class="small">${n}</span><input type="time" id="t-${id}" data-act="time" data-id="${id}" value="${id==='soak'?(S.times.soak||'21:30'):mealTime(id)}" class="field"></label>`).join('')}</div>
+    </section>
+    <section class="card">
+      <div class="spread"><h3 style="font-size:17px">التذكيرات</h3>
+      ${perm==='default'?`<button class="btn primary" data-act="notif">فعّل إشعارات المتصفح</button>`:perm==='granted'?'<span class="badge b-yes">الإشعارات مفعّلة</span>':''}</div>
+      <p class="small muted" style="margin:.3em 0 .4em">تظهر التذكيرات هنا مع صوت تنبيه ما دامت الصفحة مفتوحة. وللتذكير على الجوال حتى والصفحة مغلقة، اضغط <b>أضف لتقويم Google</b> لكل موعد: يُنشأ حدث يتكرر يومياً بتنبيه.</p>
+      <div>${REMS.map(r=>`<div class="rem"><div><div class="nm">${esc(r.t)}</div><div class="ds">${r.water?esc(r.d):fmt12(remTime(r))+(r.d?' · '+esc(r.d):'')}${r.supp&&S.pause?' · موقوف (المكملات متوقفة)':''}</div></div>
+        <button class="sw" role="switch" aria-checked="${remOn(r)}" data-act="rem" data-id="${r.id}" aria-label="تفعيل ${esc(r.t)}"></button>
+        ${r.water?'':`<div class="acts"><a class="link" href="${gcal(r)}" target="_blank" rel="noopener">أضف لتقويم Google</a></div>`}</div>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><button class="btn" data-act="testrem">جرّب التنبيه</button></div>
+    </section>
+  </div>`;
+}
+/* reminder engine */
+let audioCtx=null;
+document.addEventListener('pointerdown',()=>{try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}},{once:true});
+function chime(){try{if(!audioCtx)return;const t=audioCtx.currentTime;[659,880].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(0,t+i*.18);g.gain.linearRampToValueAtTime(.18,t+i*.18+.02);g.gain.exponentialRampToValueAtTime(.001,t+i*.18+.6);o.connect(g).connect(audioCtx.destination);o.start(t+i*.18);o.stop(t+i*.18+.7)})}catch(e){}}
+function toast(title,body){
+  const h=document.getElementById('toast-host');
+  h.innerHTML=`<div class="toast" dir="rtl" role="status"><div><b>${esc(title)}</b>${body?`<div class="small" style="opacity:.8">${esc(body)}</div>`:''}</div><button data-act="closetoast">تم</button></div>`;
+  chime();
+  try{if('Notification' in window&&Notification.permission==='granted'){const o={body:body||'',icon:'icon-192.png',badge:'icon-192.png',tag:'maidati'};if(navigator.serviceWorker&&navigator.serviceWorker.controller)navigator.serviceWorker.ready.then(r=>r.showNotification('مائدتي: '+title,o));else new Notification('مائدتي: '+title,o)}}catch(e){}
+  clearTimeout(toast.t);toast.t=setTimeout(()=>h.innerHTML='',60000);
+}
+function tick(){
+  const now=new Date(),hm=pad(now.getHours())+':'+pad(now.getMinutes()),day=['SU','MO','TU','WE','TH','FR','SA'][now.getDay()];
+  const fk=dkey();S.fired[fk]=S.fired[fk]||{};
+  for(const r of REMS){
+    if(!remOn(r))continue;if(r.supp&&S.pause)continue;if(r.days&&!r.days.includes(day))continue;
+    let hit=false;
+    if(r.water){const h=now.getHours();hit=now.getMinutes()===0&&h>=9&&h<=21&&h%2===1;}
+    else hit=remTime(r)===hm;
+    const id=r.id+hm;
+    if(hit&&!S.fired[fk][id]){S.fired[fk][id]=1;save();
+      let body=r.d;const meal=MEALS.find(m=>m.id===r.id);
+      if(meal){body=mealSummary(meal).filter(x=>!/لم تختر/.test(x.v)).map(x=>x.v).slice(0,3).join(' · ')||r.d}
+      toast(r.t,body);if(S.tab==='today')vToday();}
+  }
+  // keep only today's fired log
+  for(const k in S.fired)if(k!==fk)delete S.fired[k];
+}
+setInterval(tick,20000);
+
+/* ============ EVENTS ============ */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
+  if(a==='close'){if(e.target===b||b.tagName==='BUTTON')closeSheet();return}
+  if(a==='closetoast'){document.getElementById('toast-host').innerHTML='';return}
+  if(a==='water'){const n=+b.dataset.n,cur=S.water[dkey()]||0;S.water[dkey()]=cur===n?n-1:n;save();vToday();return}
+  if(a==='supp'){const s=S.supp[dkey()]=S.supp[dkey()]||{};s[b.dataset.id]=!s[b.dataset.id];save();vToday();return}
+  if(a==='pause'){S.pause=!S.pause;save();render();return}
+  if(a==='q'){const q=QUOTAS.find(x=>x.id===b.dataset.id);const k=q.per==='w'?wkey():mkey();S.q[k]=S.q[k]||{};S.q[k][q.id]=Math.max(0,(S.q[k][q.id]||0)+(+b.dataset.d));save();
+    if(document.querySelector('.sheet')){b.textContent='سُجّلت ✓';b.disabled=true}else vToday();return}
+  if(a==='pick'){autoPick(b.dataset.meal,true);vToday();return}
+  if(a==='goplan'){go('plan');return}
+  if(a==='pickall'){MEALS.forEach(m=>autoPick(m.id,true));vPlan();return}
+  if(a==='opt'){const tp=todayPlan();tp[b.dataset.meal]=tp[b.dataset.meal]||{};const v=b.dataset.v;tp[b.dataset.meal][b.dataset.k]=tp[b.dataset.meal][b.dataset.k]===v?undefined:v;save();
+    b.parentElement.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===tp[b.dataset.meal][b.dataset.k]));return}
+  if(a==='whatnow'){whatNow();return}
+  if(a==='recipe'){openRecipe(b.dataset.id);return}
+  if(a==='rf'){rFilter=b.dataset.k;vRecipes();return}
+  if(a==='fav'){const id=b.dataset.id,i=S.favs.indexOf(id);i<0?S.favs.push(id):S.favs.splice(i,1);save();openRecipe(id);if(S.tab==='recipes')vRecipes();return}
+  if(a==='delai'){S.ai=S.ai.filter(r=>r.id!==b.dataset.id);save();closeSheet();vRecipes();return}
+  if(a==='rem'){S.rem[b.dataset.id]=!remOn({id:b.dataset.id});save();b.setAttribute('aria-checked',remOn({id:b.dataset.id}));return}
+  if(a==='notif'){try{Notification.requestPermission().then(()=>vRemind()).catch(()=>vRemind())}catch(err){vRemind()}return}
+  if(a==='testrem'){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)()}catch(err){}toast('هكذا يبدو التذكير','سيظهر في موعد كل وجبة ومكمل');return}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;if(t.dataset&&t.dataset.act==='time'&&t.value){S.times[t.dataset.id]=t.value;save();vRemind()}
+});
+
+render();
+setTimeout(initSample,0);
+setInterval(()=>{if(S.tab==='today'&&!document.querySelector('.sheet'))vToday()},60000);
+</script>
