@@ -745,10 +745,33 @@ const RULES=`قواعد نظام غذائي علاجي (أيض بطيء، مبن
 - مسموح ومفضل: لحم غنم، سلمون، سيباس، ديك رومي، فول، فاصوليا، لوبيا، نخي، عدس، فاصوليا سوداء، برغل، فريكة، هريس، جريش، كينوا، رز أسمر، شوفان، دخن، حنطة سوداء، يقطين، كوسا، بطاطس، جزر، بطاطا حلوة، زهرة، يام، ذرة، فطر بني، سبانخ، أفوكادو، بذر يقطين، بذور شيا، لوز، كاجو، بندق، كاكاو مر، حليب جوز الهند/اللوز، خضار السلطة، فواكه طازجة، بصل وثوم مطبوخان، كزبرة، بهارات (زنجبيل، هيل، كركم، كمون، قرفة، قرنفل).
 - الطبخ في ستانلس أو فخار أو زجاج؛ لا ألمنيوم ولا حديد ولا ورق ألمنيوم.
 - هيكل الوجبات: الفطور = فاكهة/منقوع قبله بنصف ساعة + سلطة + خبز حبوب كاملة + طبق نباتي (أو بيض/ديك رومي). الغداء = فاكهة قبله + سلطة + نشويات + بروتين. العشاء = شوربة خضار مع بصل وثوم أو كزبرة. الوجبات الخفيفة بسيطة.`;
-async function initSample(){
-  try{if(!window.claude)return;const s=await window.claude.use('sample');if(s){sampleFn=s;const b=document.getElementById('aibox');if(b)b.hidden=false;const a=document.getElementById('askbox');if(a&&lastQ)mountAsk(lastQ)}}catch(e){}
+/* خارج claude.ai: مفتاح API محفوظ على هذا الجهاز فقط (يصل عبر الرابط الخاص #k=... أو يُلصق في الإعدادات) */
+const AKEY='maidati.apikey'+(ENV==='staging'?'-staging':'');
+function getKey(){try{return localStorage.getItem(AKEY)||''}catch(e){return ''}}
+function setKey(k){try{k?localStorage.setItem(AKEY,k):localStorage.removeItem(AKEY)}catch(e){}}
+(function(){const m=location.hash.match(/^#k=(sk-ant-[A-Za-z0-9_\-]+)/);if(m){setKey(m[1]);try{history.replaceState(null,'',location.pathname+location.search)}catch(e){location.hash=''}}})();
+function apiSample(key){
+  async function call(input,opts={}){
+    let r;
+    try{r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-beta':'server-side-fallback-2026-07-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-opus-5-5',max_tokens:4000,fallbacks:'default',output_config:{effort:opts.modelTier==='quick'?'low':'medium'},messages:[{role:'user',content:input}]})})}
+    catch(e){throw{code:'network'}}
+    if(!r.ok){let m='';try{m=(await r.json()).error.message||''}catch(e){}
+      throw{code:r.status===401?'bad_key':r.status===429?'rate_limited':/credit/i.test(m)?'no_credit':'api',message:m}}
+    const j=await r.json();
+    if(j.stop_reason==='refusal')throw{code:'refusal'};
+    return {text:(j.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(''),truncated:j.stop_reason==='max_tokens'};
+  }
+  const f=(i,o)=>call(i,o);
+  f.json=async(i,o)=>{const {text}=await call(i+'\n\nأعد JSON صالحاً فقط، بدون أي نص أو علامات ``` حوله.',o);const t=text.slice(text.indexOf('{'),text.lastIndexOf('}')+1);try{return JSON.parse(t)}catch(e){throw{code:'bad'}}};
+  return f;
 }
-const ERR={not_granted:'لم يُسمح بالاتصال بـClaude من هذه الصفحة.',rate_limited:'طلبات كثيرة، انتظر دقيقة ثم جرّب.',cancelled:'أُلغي الطلب.'};
+function showAI(){const b=document.getElementById('aibox');if(b)b.hidden=!sampleFn;const a=document.getElementById('askbox');if(a&&lastQ)mountAsk(lastQ)}
+async function initSample(){
+  if(window.claude){try{const s=await window.claude.use('sample');if(s){sampleFn=s;showAI();return}}catch(e){}}
+  const k=getKey();if(k){sampleFn=apiSample(k);showAI()}
+}
+const ERR={not_granted:'لم يُسمح بالاتصال بـClaude من هذه الصفحة.',rate_limited:'طلبات كثيرة، انتظر دقيقة ثم جرّب.',cancelled:'أُلغي الطلب.',bad_key:'مفتاح Claude غير صالح. افتح التذكير ← ربط Claude وأدخله من جديد.',no_credit:'نفد رصيد حساب Claude API. اشحنه من console.anthropic.com.',network:'لا يوجد اتصال بالإنترنت.',refusal:'لم يستطع Claude إكمال هذا الطلب. جرّب صياغة أخرى.'};
 async function aiRecipe(){
   const out=document.getElementById('ai-out'),btn=document.getElementById('ai-go');
   const want=document.getElementById('ai-in').value.trim(),meal=document.getElementById('ai-meal').value;
@@ -821,7 +844,21 @@ function vRemind(){
         ${r.water?'':`<div class="acts"><a class="link" href="${gcal(r)}" target="_blank" rel="noopener">أضف لتقويم Google</a></div>`}</div>`).join('')}</div>
       <div class="row" style="margin-top:10px"><button class="btn" data-act="testrem">جرّب التنبيه</button></div>
     </section>
+    ${ENV==='artifact'?'':keyCard()}
   </div>`;
+}
+function keyCard(){
+  const k=getKey();
+  return `<section class="card" id="keycard">
+    <div class="spread"><h3 style="font-size:17px">ربط Claude</h3>${k?'<span class="badge b-yes">مربوط</span>':'<span class="badge b-info">غير مربوط</span>'}</div>
+    <p class="small muted" style="margin:.3em 0 .6em">يشغّل «وصفة جديدة» و«اسأل Claude» بمفتاح API من حسابك. المفتاح يُحفظ على هذا الجهاز فقط ولا يُرفع إلى أي مكان.</p>
+    ${k?`<div class="row"><span class="small" style="font-family:monospace;direction:ltr">${esc(k.slice(0,14))}…${esc(k.slice(-4))}</span></div>
+      <div class="row" style="margin-top:8px"><button class="btn primary" data-act="copylink">انسخ الرابط الخاص</button><button class="btn" data-act="unkey">افصل</button></div>
+      <p class="small muted" style="margin:.5em 0 0">أرسل الرابط الخاص لمن تريد: يفتحه مرة فيرتبط جهازه بحسابك، ثم يُمسح المفتاح من شريط العنوان. من يملك هذا الرابط يستطيع استخدام رصيدك، فلا تنشره علناً.</p>
+      <div id="linkout" class="small" style="margin-top:6px;word-break:break-all;direction:ltr"></div>`
+    :`<div class="row"><input id="keyin" class="field" type="password" placeholder="sk-ant-..." autocomplete="off" style="flex:1;direction:ltr"><button class="btn primary" data-act="savekey">اربط</button></div>
+      <div id="keymsg" class="small" style="margin-top:6px"></div>`}
+  </section>`;
 }
 /* reminder engine */
 let audioCtx=null;
@@ -875,6 +912,14 @@ document.addEventListener('click',e=>{
   if(a==='delai'){S.ai=S.ai.filter(r=>r.id!==b.dataset.id);save();closeSheet();vRecipes();return}
   if(a==='rem'){S.rem[b.dataset.id]=!remOn({id:b.dataset.id});save();b.setAttribute('aria-checked',remOn({id:b.dataset.id}));return}
   if(a==='notif'){try{Notification.requestPermission().then(()=>vRemind()).catch(()=>vRemind())}catch(err){vRemind()}return}
+  if(a==='savekey'){const v=(document.getElementById('keyin').value||'').trim(),msg=document.getElementById('keymsg');
+    if(!/^sk-ant-[A-Za-z0-9_\-]{20,}$/.test(v)){msg.textContent='هذا لا يشبه مفتاح Claude API (يبدأ بـ sk-ant-).';return}
+    msg.textContent='أتحقق من المفتاح…';const f=apiSample(v);
+    f('قل: تم',{modelTier:'quick'}).then(()=>{setKey(v);sampleFn=f;vRemind()}).catch(e=>{msg.textContent=ERR[e.code]||('تعذّر التحقق: '+(e.message||''))});return}
+  if(a==='unkey'){setKey('');if(!window.claude)sampleFn=null;vRemind();return}
+  if(a==='copylink'){const url=location.origin+location.pathname+'#k='+getKey();const out=document.getElementById('linkout');
+    const done=()=>{out.textContent='نُسخ الرابط.'};const fb=()=>{out.textContent=url};
+    try{navigator.clipboard.writeText(url).then(done,fb)}catch(err){fb()}return}
   if(a==='testrem'){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)()}catch(err){}toast('هكذا يبدو التذكير','سيظهر في موعد كل وجبة ومكمل');return}
 });
 document.addEventListener('change',e=>{
